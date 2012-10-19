@@ -47,9 +47,8 @@
       .clear {
         clear: both;
       }
-      
       .js-dependent,
-      .hide {
+      .hidden {
         display: none;
       }
       
@@ -58,6 +57,10 @@
         font-style: italic;
         color: #414141;
         margin-top: 1em;
+      }
+      
+      #minnpost-2012-mn-election-results table {
+        width: 100%;
       }
     </style>
     
@@ -81,8 +84,11 @@
         <p>No race or contest found.</p>
       <% } else { %>
         <h3><%= race %></h3>
-        <p>Last updated: <%= updated %></p>
-        <p>Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> (<%= precincts_percentage %>%)</p>
+        <p>
+          Last updated: <%= updated_moment.format('MMM Do h:mm a') %><br />
+          Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
+          (<%= precincts_percentage %>%)
+        </p>
         <table>
           <thead>
             <tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
@@ -113,6 +119,8 @@
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/underscore-1.3.3/underscore-min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/jquery-custom-master-20120606/jquery-1.7.2.custom.min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/backbone-0.9.2/backbone-min.js"></script>
+    <!-- Date handling -->
+    <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/moment.js-1.7.2/moment.min.js"></script>
     
     <script type="text/javascript">
       // Handle custom jQuery
@@ -137,10 +145,13 @@
             if (!_.isUndefined(response[0])) {
               parsed.race = response[0].office_name;
               parsed.updated = response[0].updated;
+              parsed.updated_moment = moment.unix(response[0].updated);
+              // parsed.updated_moment.utc(); // This should be UTC but no
               parsed.precincts_reporting = response[0].precincts_reporting;
               parsed.total_effected_precincts = response[0].total_effected_precincts;
               parsed.precincts_percentage = parsed.precincts_reporting / parsed.total_effected_precincts;
             }
+            
             return parsed;
           }
         });
@@ -170,7 +181,6 @@
           
         });
         
-        
         // Main router and workspace for actions
         var Workspace = Backbone.Router.extend({
           routes: {
@@ -188,11 +198,8 @@
             this.navigate('/dashboard', { trigger: true, replace: true });
           },
           
-          dashboard: function() {
-            var testingRace = new Race();
-            testingRace.set('race_id', 'id---09046-4022');
-            testingRace.fetch();
-            
+          showRace: function(raceID) {
+            var testingRace = new Race({ 'race_id': raceID });
             var testingView = new RaceView({
               model: testingRace,
               el: '#application-container'
@@ -202,6 +209,7 @@
               testingView.render();
             });
             
+            testingRace.fetch();
           }
         
         });
