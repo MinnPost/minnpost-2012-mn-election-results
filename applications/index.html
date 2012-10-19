@@ -77,6 +77,30 @@
     
     <!-- Templates to be used in client side processing. -->
     <script id="template-race-view" type="text/template">
+      <% if (typeof race == 'undefined') { %>
+        <p>No race or contest found.</p>
+      <% } else { %>
+        <h3><%= race %></h3>
+        <p>Last updated: <%= updated %></p>
+        <p>Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> (<%= precincts_percentage %>%)</p>
+        <table>
+          <thead>
+            <tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
+          </thead>
+          <tbody>
+            <% for (var c in candidates) { %>
+              <% if (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 10) { %>
+                <tr>
+                  <th><%= candidates[c].candidate %></th>
+                  <th><%= candidates[c].party_id %></th>
+                  <th><%= candidates[c].votes_candidate %></th>
+                  <th><%= candidates[c].percentage %></th>
+                </tr>
+              <% } %>
+            <% } %>
+          </tbody>
+        </table>
+      <% } %>
     </script>
   
   
@@ -107,16 +131,16 @@
           },
           
           parse: function(response) {
-            console.log(response);
             var parsed = {};
             
             parsed.candidates = response;
             if (!_.isUndefined(response[0])) {
               parsed.race = response[0].office_name;
               parsed.updated = response[0].updated;
+              parsed.precincts_reporting = response[0].precincts_reporting;
+              parsed.total_effected_precincts = response[0].total_effected_precincts;
+              parsed.precincts_percentage = parsed.precincts_reporting / parsed.total_effected_precincts;
             }
-            
-            console.log(parsed);
             return parsed;
           }
         });
@@ -140,7 +164,7 @@
           }, 
           
           render: function() {
-            this.$el.html(_.template(this.template, this.model.toJSON()));
+            $(this.el).html(_.template(this.template, this.model.toJSON()));
             return this;
           }
           
@@ -166,16 +190,15 @@
           
           dashboard: function() {
             var testingRace = new Race();
-            testingRace.set('race_id', 'id---61A-0308');
+            testingRace.set('race_id', 'id---09046-4022');
             testingRace.fetch();
             
             var testingView = new RaceView({
               model: testingRace,
-              id: 'application-container'
+              el: '#application-container'
             });
             
             testingRace.on('change', function() {
-              console.log('changed');
               testingView.render();
             });
             
