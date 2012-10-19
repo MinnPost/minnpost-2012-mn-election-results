@@ -61,19 +61,25 @@
       }
     </style>
     
+    
+    
     <!-- Initial HTML for application -->
     <div id="minnpost-2012-mn-election-results">
       <noscript>
         <p>This application requires Javascript which is used to make your web browser more interactive.  If this message does not go away, please consider enabling Javascript.  Here are <a href="http://www.enable-javascript.com/" target="_blank">instructions on how to enable JavaScript in your web browser</a>.</p>
       </noscript>
       
+      <div id="application-container">
+      </div>
       
       <p class="footnote">Election data provided by the <a href="http://www.sos.state.mn.us/" target="_blank">MN Secretary of State</a>.</p>
     </div>
     
     <!-- Templates to be used in client side processing. -->
-    <script id="template-" type="text/template">
+    <script id="template-race-view" type="text/template">
     </script>
+  
+  
   
     <!-- jQuery that is used on site -->
     <script type="text/javascript">
@@ -90,6 +96,55 @@
       Backbone.setDomLibrary(jQueryCustom);
         
       (function($, w, undefined) {
+      
+        // Model for a single race
+        var Race = Backbone.Model.extend({
+          apiURL: 'http://box.scraperwiki.com/zzolo/mn-2012-election-results/sqlite?q=',
+    
+          url: function() {
+            return this.apiURL + encodeURI("SELECT * FROM results_general WHERE race_id = '" + 
+              this.get('race_id') + "' LIMIT 100");
+          },
+          
+          parse: function(response) {
+            console.log(response);
+            var parsed = {};
+            
+            parsed.candidates = response;
+            if (!_.isUndefined(response[0])) {
+              parsed.race = response[0].office_name;
+              parsed.updated = response[0].updated;
+            }
+            
+            console.log(parsed);
+            return parsed;
+          }
+        });
+        
+        // Collection for races
+        var Races = Backbone.Collection.extend({
+          url: function() {
+            return 'http://box.scraperwiki.com/zzolo/mn-2012-election-results/';
+          },
+          
+          parse: function(response) {
+            return response;
+          }
+          
+        });
+        
+        // View for a single race
+        var RaceView = Backbone.View.extend({
+          initialize: function() {
+            this.template = $('#template-race-view').html();
+          }, 
+          
+          render: function() {
+            this.$el.html(_.template(this.template, this.model.toJSON()));
+            return this;
+          }
+          
+        });
         
         
         // Main router and workspace for actions
@@ -107,6 +162,23 @@
         
           defaultRoute: function() {
             this.navigate('/dashboard', { trigger: true, replace: true });
+          },
+          
+          dashboard: function() {
+            var testingRace = new Race();
+            testingRace.set('race_id', 'id---61A-0308');
+            testingRace.fetch();
+            
+            var testingView = new RaceView({
+              model: testingRace,
+              id: 'application-container'
+            });
+            
+            testingRace.on('change', function() {
+              console.log('changed');
+              testingView.render();
+            });
+            
           }
         
         });
