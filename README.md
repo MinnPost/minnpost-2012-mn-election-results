@@ -1,4 +1,3 @@
-minnpost-2012-mn-election-results
-=================================
+# 2012 MN Election Results
 
 Live election results application for MN 2012 general election
