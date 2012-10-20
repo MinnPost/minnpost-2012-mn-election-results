@@ -87,13 +87,14 @@
         <p>
           Last updated: <%= updated_moment.format('MMM Do h:mm a') %><br />
           Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
-          (<%= precincts_percentage %>%)
+          (<%= precincts_percentage.toFixed(2) %>%)
         </p>
         <table>
           <thead>
             <tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
           </thead>
           <tbody>
+            <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
             <% for (var c in candidates) { %>
               <% if (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 10) { %>
                 <tr>
