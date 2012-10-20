@@ -99,7 +99,7 @@
               <% if (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 10) { %>
                 <tr>
                   <th><%= candidates[c].candidate %></th>
-                  <th><%= candidates[c].party_id %></th>
+                  <th><%= candidates[c].partyOutput %></th>
                   <th><%= _.formatNumber(candidates[c].votes_candidate) %></th>
                   <th><%= candidates[c].percentage %></th>
                 </tr>
@@ -108,6 +108,10 @@
           </tbody>
         </table>
       <% } %>
+    </script>
+    
+    <script id="template-party-value" type="text/template">
+      <span class="party" style="color: <%= party.colors[0] %>" title="<%= party.title %>"><%= value %></span>
     </script>
   
   
@@ -153,10 +157,18 @@
               this.get('race_id') + "' LIMIT 100");
           },
           
+          initialize: function() {
+            this.partyViewer = new PartyView();
+          },
+          
           parse: function(response) {
             var parsed = {};
             
-            parsed.candidates = response;
+            parsed.candidates = _.map(response, function(r) {
+              r.partyOutput = this.partyViewer.render(r.party_id, r.party_id);
+              return r;
+            }, this);
+            
             if (!_.isUndefined(response[0])) {
               parsed.race = response[0].office_name;
               parsed.updated = response[0].updated;
@@ -166,7 +178,6 @@
               parsed.total_effected_precincts = response[0].total_effected_precincts;
               parsed.precincts_percentage = parsed.precincts_reporting / parsed.total_effected_precincts;
             }
-            
             return parsed;
           }
         });
@@ -193,7 +204,40 @@
             $(this.el).html(_.template(this.template, this.model.toJSON()));
             return this;
           }
+        });
+        
+        // View for parties
+        var PartyView = Backbone.View.extend({
+          partyColors: {
+            'IP': { colors: [ 'orange' ], title: 'Independence' },
+            'R': { colors: [ 'red' ], title: 'Republican' },
+            'DFL': { colors: [ 'blue' ], title: 'Democratic-Farmer-Labor' },
+            'LIB': { colors: [ '' ], title: 'Libertarian Party' },
+            'SWP': { colors: [ '' ], title: 'Socialist Workers Party' },
+            'CP': { colors: [ '' ], title: 'Constitution Party' },
+            'CG': { colors: [ '' ], title: 'Constitutional Government' },
+            'GP': { colors: [ 'green' ], title: 'Green Party' },
+            'GR': { colors: [ '' ], title: 'Grassroots Party' },
+            'MOP': { colors: [ '' ], title: 'Minnesota Open Progressives' },
+            'EDP': { colors: [ '' ], title: 'Ecology Democracy Party' },
+            'IND': { colors: [ '' ], title: 'Independent' },
+            'SL': { colors: [ '' ], title: 'Socialism and Liberation' },
+            'JP': { colors: [ '' ], title: 'Justice Party' },
+            'NP': { colors: [ '#222222' ], title: 'Nonpartisan' },
+            'WI': { colors: [ '#999999' ], title: 'Write-In' }
+          },
           
+          initialize: function() {
+            this.template = $('#template-party-value').html();
+          },
+          
+          render: function(party, value) {
+            return _.template(this.template, {
+              value: value,
+              party: (_.isUndefined(this.partyColors[party])) ? { } : this.partyColors[party],
+              partyID: party
+            });
+          }
         });
         
         // Main router and workspace for actions
