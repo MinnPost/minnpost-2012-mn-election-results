@@ -100,7 +100,7 @@
                 <tr>
                   <th><%= candidates[c].candidate %></th>
                   <th><%= candidates[c].party_id %></th>
-                  <th><%= candidates[c].votes_candidate %></th>
+                  <th><%= _.formatNumber(candidates[c].votes_candidate) %></th>
                   <th><%= candidates[c].percentage %></th>
                 </tr>
               <% } %>
@@ -124,10 +124,25 @@
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/moment.js-1.7.2/moment.min.js"></script>
     
     <script type="text/javascript">
+      // Add some helpful funcitons to Backboe, because that makes
+      // sense.
+      console.log(_);
+      _.formatNumber = function(num) {
+        var array = num.toString().split('');
+        var index = -3;
+        while (array.length + index > 0) {
+        array.splice(index, 0, ',');
+          // Decrement by 4 since we just added another unit to the array.
+          index -= 4;
+        }
+        return array.join('');
+      };
+    
       // Handle custom jQuery
       jQueryCustom = jQueryCustom.noConflict();
       Backbone.setDomLibrary(jQueryCustom);
-        
+      
+      // MAke the magic happen
       (function($, w, undefined) {
       
         // Model for a single race
