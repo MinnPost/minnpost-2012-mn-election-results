@@ -72,7 +72,7 @@
         <p>This application requires Javascript which is used to make your web browser more interactive.  If this message does not go away, please consider enabling Javascript.  Here are <a href="http://www.enable-javascript.com/" target="_blank">instructions on how to enable JavaScript in your web browser</a>.</p>
       </noscript>
       
-      <div id="application-container">
+      <div id="render-container">
       </div>
       
       <p class="footnote">Election data provided by the <a href="http://www.sos.state.mn.us/" target="_blank">MN Secretary of State</a>.</p>
@@ -84,10 +84,11 @@
         <p>No race or contest found.</p>
       <% } else { %>
         <h3><%= race %></h3>
+        <a href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a>
         <p>
           Last updated: <%= updated_moment.format('MMM Do h:mm a') %><br />
           Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
-          (<%= precincts_percentage.toFixed(2) %>%)
+          (<%= (precincts_percentage * 100).toFixed(2) %>%)
         </p>
         <table>
           <thead>
@@ -108,6 +109,10 @@
           </tbody>
         </table>
       <% } %>
+    </script>
+    
+    <script id="template-races-view" type="text/template">
+      <%= races %>
     </script>
     
     <script id="template-party-value" type="text/template">
@@ -159,17 +164,32 @@
           
           initialize: function() {
             this.partyViewer = new PartyView();
+            this.view = {
+              
+            }
+            
+            // This is not always called before parsing
+            if (_.isArray(this.get('candidates'))) {
+              this.set('candidates', _.map(this.get('candidates'), function(r) {
+                r.partyOutput = this.partyViewer.render(r.party_id, r.party_id);
+                return r;
+              }, this));
+            }
           },
           
           parse: function(response) {
             var parsed = {};
             
-            parsed.candidates = _.map(response, function(r) {
-              r.partyOutput = this.partyViewer.render(r.party_id, r.party_id);
-              return r;
-            }, this);
+            parsed.candidates = response;
+            if (_.isFunction(this.partyViewer)) {
+              parsed.candidates = _.map(response, function(r) {
+                r.partyOutput = this.partyViewer.render(r.party_id, r.party_id);
+                return r;
+              }, this);
+            }
             
             if (!_.isUndefined(response[0])) {
+              parsed.race_id = response[0].race_id;
               parsed.race = response[0].office_name;
               parsed.updated = response[0].updated;
               parsed.updated_moment = moment.unix(response[0].updated);
@@ -184,24 +204,52 @@
         
         // Collection for races
         var Races = Backbone.Collection.extend({
+          apiURL: 'http://box.scraperwiki.com/zzolo/mn-2012-election-results/sqlite?q=',
+    
           url: function() {
-            return 'http://box.scraperwiki.com/zzolo/mn-2012-election-results/';
+            return this.apiURL + encodeURI(
+              "SELECT * FROM results_general WHERE " +
+              this.options.field + " LIKE '%" + 
+              this.options.search + "%' " + 
+              "ORDER BY office_name LIMIT 100");
           },
           
-          parse: function(response) {
-            return response;
-          }
+          model: Race,
           
+          parse: function(response) {
+            return _.values(_.groupBy(response, 'race_id'));
+          },
+          
+          initialize: function(models, options) {
+            this.options = options || {};
+          }
         });
         
         // View for a single race
         var RaceView = Backbone.View.extend({
           initialize: function() {
-            this.template = $('#template-race-view').html();
+            this.template = $('#template-races-view').html();
           }, 
           
           render: function() {
             $(this.el).html(_.template(this.template, this.model.toJSON()));
+            return this;
+          }
+        });
+        
+        // View for a multiple races
+        var RacesView = Backbone.View.extend({
+          initialize: function() {
+            this.template = $('#template-races-view').html();
+            this.raceTemplate = $('#template-race-view').html();
+          }, 
+          
+          render: function() {
+            var races = [];
+            this.collection.each(function(r) {
+              races.push(_.template(this.raceTemplate, r.toJSON()));
+            }, this);
+            $(this.el).html(_.template(this.template, { races: races.join(' ') }));
             return this;
           }
         });
@@ -251,6 +299,25 @@
           },
         
           initialize: function() {
+            // Models, collections
+            this.race = new Race();
+            this.race.on('change', function() {
+              this.raceView.render();
+            }, this);
+            this.races = new Races();
+            this.races.on('reset', function(e) {
+              this.racesView.render();
+            }, this);
+            
+            // Views
+            this.raceView = new RaceView({
+              model: this.race,
+              el: '#render-container'
+            });
+            this.racesView = new RacesView({
+              collection: this.races,
+              el: '#render-container'
+            });
           },
         
           defaultRoute: function() {
@@ -258,19 +325,16 @@
           },
           
           showRace: function(raceID) {
-            var testingRace = new Race({ 'race_id': raceID });
-            var testingView = new RaceView({
-              model: testingRace,
-              el: '#application-container'
-            });
-            
-            testingRace.on('change', function() {
-              testingView.render();
-            });
-            
-            testingRace.fetch();
+            this.race.set('race_id', raceID);
+            this.race.fetch();
+          },
+          
+          showRaceGroup: function(races) {
+            this.races.options = this.races.options || {};
+            this.races.options.field = 'office_name';
+            this.races.options.search = races;
+            this.races.fetch();
           }
-        
         });
           
         // When ready, make the magic happen
