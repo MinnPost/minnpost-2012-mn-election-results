@@ -185,27 +185,18 @@
           },
           
           initialize: function() {
-            this.partyViewer = new PartyView();
-            
-            // This is not always called before parsing
-            if (_.isArray(this.get('candidates'))) {
-              this.set('candidates', _.map(this.get('candidates'), function(r) {
-                r.partyOutput = this.partyViewer.render(r.party_id, r.party_id);
-                return r;
-              }, this));
-            }
+            this.partyViewer = this.partyViewer || new PartyView();
           },
           
           parse: function(response) {
             var parsed = {};
+            this.partyViewer = this.partyViewer || new PartyView();
             
             parsed.candidates = response;
-            if (_.isFunction(this.partyViewer)) {
-              parsed.candidates = _.map(response, function(r) {
-                r.partyOutput = this.partyViewer.render(r.party_id, r.party_id);
-                return r;
-              }, this);
-            }
+            parsed.candidates = _.map(response, function(r) {
+              r.partyOutput = this.partyViewer.render(r.party_id, r.party_id);
+              return r;
+            }, this);
             
             if (!_.isUndefined(response[0])) {
               parsed.race_id = response[0].race_id;
