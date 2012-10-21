@@ -150,6 +150,17 @@
       </div>
     </script>
     
+    <script id="template-dashboard-view" type="text/template">
+      <h3>Election Results</h3>
+      <p>
+        Last updated: <br />
+        Precincts reporting: 
+        (%)
+      </p>
+      
+      <div class="dashboard-president"></div>
+    </script>
+    
     <script id="template-party-value" type="text/template">
       <span class="party" style="color: <%= party.colors[0] %>" title="<%= party.title %>"><%= value %></span>
     </script>
@@ -308,6 +319,30 @@
           }
         });
         
+        // View for dashbard
+        var DashboardView = Backbone.View.extend({
+          initialize: function() {
+            this.partyView = new PartyView();
+            this.template = $('#template-dashboard-view').html();
+            
+            this.summaries = {
+              president: {
+                collection: new Races([], {
+                  field: 'race_id',
+                  search: 'id----0101'
+                }),
+                render: function() {
+                  
+                }
+              }
+            };
+          },
+        
+          render: function() {
+            $(this.el).html(_.template(this.template, {}));
+          }
+        });
+        
         // View for parties
         var PartyView = Backbone.View.extend({
           partyColors: {
@@ -345,7 +380,7 @@
         // Main router and workspace for actions
         var Workspace = Backbone.Router.extend({
           routes: {
-            'dashboard': 'dashboard',
+            'dashboard': 'showDashboard',
             'search/:term': 'search',
             'race/:race': 'showRace',
             'races/:races': 'showRaceGroup',
@@ -372,10 +407,17 @@
               collection: this.races,
               el: '#render-container'
             });
+            this.dashboardView = new DashboardView({
+              el: '#render-container'
+            });
           },
         
           defaultRoute: function() {
             this.navigate('/dashboard', { trigger: true, replace: true });
+          },
+        
+          showDashboard: function() {
+              this.dashboardView.render();
           },
           
           showRace: function(raceID) {
