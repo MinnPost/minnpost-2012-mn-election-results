@@ -158,7 +158,7 @@
         (%)
       </p>
       
-      <div class="dashboard-president"></div>
+      <div class="dashboard-summaries"></div>
     </script>
     
     <script id="template-party-value" type="text/template">
@@ -324,6 +324,7 @@
           initialize: function() {
             this.partyView = new PartyView();
             this.template = $('#template-dashboard-view').html();
+            this.loadingTemplate = $('#template-loading').html();
             
             this.summaries = {
               president: {
@@ -331,6 +332,7 @@
                   field: 'race_id',
                   search: 'id----0101'
                 }),
+                className: 'dashboard-president',
                 render: function() {
                   
                 }
@@ -339,7 +341,27 @@
           },
         
           render: function() {
-            $(this.el).html(_.template(this.template, {}));
+            this.$el = this.$el || $(this.el);
+            this.$el.html(_.template(this.template, {}));
+            
+            // Add sumary containers and start rendering
+            this.$summaries = this.$el.find('.dashboard-summaries');
+            _.each(this.summaries, function(summary, s) {
+              $('<div>').addClass(summary.className).appendTo(this.$summaries);
+              
+              this.loading('.' + summary.className);
+              summary.collection.fetch({
+                success: function(collection, response) {
+                  //console.log(collection);
+                }
+              });
+            }, this);
+          },
+          
+          loading: function(el) {
+            el = el || this.el;
+            $(el).html(_.template(this.loadingTemplate, {}));
+            return this;
           }
         });
         
