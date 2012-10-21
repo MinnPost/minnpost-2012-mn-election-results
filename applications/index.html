@@ -90,11 +90,19 @@
         <% } %>
         
         <a href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a>
-        <p>
-          Last updated: <%= updated_moment.format('MMM Do h:mm a') %><br />
-          Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
-          (<%= (precincts_percentage * 100).toFixed(2) %>%)
-        </p>
+        <% if (typeof races == 'undefined') { %>
+          <p>
+            Last updated: <%= updated_moment.format('MMM Do h:mm a') %><br />
+            Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
+            (<%= (precincts_percentage * 100).toFixed(2) %>%)
+          </p>
+        <% } else { %>
+          <p>
+            Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
+            (<%= (precincts_percentage * 100).toFixed(2) %>%)
+          </p>
+        <% } %>
+        
         <table>
           <thead>
             <tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
@@ -118,12 +126,15 @@
     
     <script id="template-races-view" type="text/template">
       <h3><%= title %></h3>
+      <p>Last updated: <%= updatedMoment.format('MMM Do h:mm a') %></p>
       
-      <% if (typeof races == 'undefined' || races === '') { %>
-        <p>No races or contests found.</p>
-      <% } else { %>
-        <%= races %>
-      <% } %>
+      <div class="races-races-list">
+        <% if (typeof races == 'undefined' || races === '') { %>
+          <p>No races or contests found.</p>
+        <% } else { %>
+          <%= races %>
+        <% } %>
+      </div>
     </script>
     
     <script id="template-party-value" type="text/template">
@@ -254,15 +265,26 @@
           
           render: function() {
             var races = [];
+            var tData = {};
+            var first;
+            
+            // Determine title
+            tData.title = this.collection.options.search;
+            
+            // Get first race to get some aggregate values
+            first = this.collection.at(0);
+            tData.updated = first.get('updated');
+            tData.updatedMoment = first.get('updated_moment');
+            
+            // Render each race
             this.collection.each(function(r) {
               var data = r.toJSON();
               data.races = true;
               races.push(_.template(this.raceTemplate, data));
             }, this);
-            $(this.el).html(_.template(this.template, {
-              races: races.join(' '),
-              title: 'Races'
-            }));
+            tData.races = races.join(' ');
+            
+            $(this.el).html(_.template(this.template, tData));
             return this;
           }
         });
@@ -284,7 +306,7 @@
             'IND': { colors: [ '' ], title: 'Independent' },
             'SL': { colors: [ '' ], title: 'Socialism and Liberation' },
             'JP': { colors: [ '' ], title: 'Justice Party' },
-            'NP': { colors: [ '#222222' ], title: 'Nonpartisan' },
+            'NP': { colors: [ '#DCDCDC' ], title: 'Nonpartisan' },
             'WI': { colors: [ '#999999' ], title: 'Write-In' }
           },
           
