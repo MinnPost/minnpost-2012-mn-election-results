@@ -62,6 +62,19 @@
       #minnpost-2012-mn-election-results table {
         width: 100%;
       }
+      
+      .loading-general {
+        width: 100%;
+        text-align: center;
+        padding: 1em 2em;
+        color: #ABABAB;
+        vertical-align: middle;
+      }
+      .loading-general span {
+        padding: 10px 5px 10px 40px;
+        background: transparent url('images/ajax-loader.gif') center left no-repeat;
+        vertical-align: middle;
+      }
     </style>
     
     
@@ -140,6 +153,10 @@
     <script id="template-party-value" type="text/template">
       <span class="party" style="color: <%= party.colors[0] %>" title="<%= party.title %>"><%= value %></span>
     </script>
+    
+    <script id="template-loading" type="text/template">
+      <div class="loading-general"><span>Loading...</span></div>
+    </script>
   
   
   
@@ -203,7 +220,6 @@
               parsed.race = response[0].office_name;
               parsed.updated = response[0].updated;
               parsed.updated_moment = moment.unix(response[0].updated);
-              // parsed.updated_moment.utc(); // This should be UTC but no
               parsed.precincts_reporting = response[0].precincts_reporting;
               parsed.total_effected_precincts = response[0].total_effected_precincts;
               parsed.precincts_percentage = parsed.precincts_reporting / parsed.total_effected_precincts;
@@ -239,10 +255,16 @@
         var RaceView = Backbone.View.extend({
           initialize: function() {
             this.template = $('#template-race-view').html();
+            this.loadingTemplate = $('#template-loading').html();
           }, 
           
           render: function() {
             $(this.el).html(_.template(this.template, this.model.toJSON()));
+            return this;
+          },
+          
+          loading: function() {
+            $(this.el).html(_.template(this.loadingTemplate, {}));
             return this;
           }
         });
@@ -252,6 +274,7 @@
           initialize: function() {
             this.template = $('#template-races-view').html();
             this.raceTemplate = $('#template-race-view').html();
+            this.loadingTemplate = $('#template-loading').html();
           }, 
           
           render: function() {
@@ -276,6 +299,11 @@
             tData.races = races.join(' ');
             
             $(this.el).html(_.template(this.template, tData));
+            return this;
+          },
+          
+          loading: function() {
+            $(this.el).html(_.template(this.loadingTemplate, {}));
             return this;
           }
         });
@@ -352,6 +380,7 @@
           
           showRace: function(raceID) {
             this.race.set('race_id', raceID);
+            this.raceView.loading();
             this.race.fetch();
           },
           
@@ -359,6 +388,7 @@
             this.races.options = this.races.options || {};
             this.races.options.field = 'office_name';
             this.races.options.search = races;
+            this.racesView.loading();
             this.races.fetch();
           }
         });
