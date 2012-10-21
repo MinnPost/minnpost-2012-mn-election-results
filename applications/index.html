@@ -355,7 +355,7 @@
           initialize: function() {
             // Models, collections
             this.race = new Race();
-            this.race.on('change', function() {
+            this.race.on('change', function(e) {
               this.raceView.render();
             }, this);
             this.races = new Races();
@@ -379,9 +379,14 @@
           },
           
           showRace: function(raceID) {
-            this.race.set('race_id', raceID);
-            this.raceView.loading();
-            this.race.fetch();
+            if (raceID !== this.race.get('race_id')) {
+              this.race.set('race_id', raceID);
+              this.raceView.loading();
+              this.race.fetch();
+            }
+            else {
+              this.raceView.render();
+            }
           },
           
           showRaceGroup: function(races) {
