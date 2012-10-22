@@ -75,6 +75,14 @@
         background: transparent url('images/ajax-loader.gif') center left no-repeat;
         vertical-align: middle;
       }
+      
+      .barchart-container {
+        margin-bottom: 1em;
+      }
+      .barchart-container div {
+        height: 2em;
+        float: left;
+      }
     </style>
     
     
@@ -191,7 +199,7 @@
         </tbody>
       </table>
       
-      <div id="dashboard-president-canvas"></div>
+      <div class="dashboard-president-chart"></div>
     </script>
     
     <script id="template-dashboard-amendments" type="text/template">
@@ -208,6 +216,14 @@
       <h4>Congress</h4>
       <p>Some stuff.</p>
     </script>
+    
+    <script id="template-barchart-view" type="text/template">
+      <div class="barchart-container clear-block">
+        <% for (var i in c) { %>
+          <div style="width: <%= c[i].width * 100 %>%; background-color: <%= c[i].color %>;"></div>
+        <% } %>
+      </div>
+    </script>
   
   
   
@@ -221,8 +237,6 @@
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/backbone-0.9.2/backbone-min.js"></script>
     <!-- Date handling -->
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/moment.js-1.7.2/moment.min.js"></script>
-    <!-- Raphael for drawing -->
-    <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/raphael-2.1.0/raphael-min.js"></script>
     
     <script type="text/javascript">
       // Add some helpful funcitons to Backboe, because that makes
@@ -387,31 +401,16 @@
                   var race = this.collection.at(0);
                   var data = race.toJSON();
                   
-                  // Render template
+                  // Render template and chart
                   $('.' + this.className).html(
                     _.template($('#template-' + this.className).html(), data));
                     
-                  // Create visualization
-                  var el = this.className + '-canvas';
-                  var w = $('#' + el).width();
-                  var paper = Raphael(el, w, 50);
-                  var counts = { 'R': 0, 'DFL': 0, 'OTH': 0 };
-                  
-                  _.each(race.get('candidates'), function(c) {
-                    if (!_.isUndefined(counts[c.party_id])) {
-                      counts[c.party_id] = c.percentage / 100;
-                    }
-                    else {
-                      counts.OTH += c.percentage / 100;
-                    }
+                  // Create barchart
+                  var chart = new RaceBarChart({
+                    el: '.' + this.className + '-chart',
+                    model: race
                   });
-                  
-                  paper.rect(0, 0, w * counts['R'], 50)
-                    .attr({ 'fill': 'red', 'stroke-width': 0 });
-                  paper.rect(0 + w * counts['R'], 0, w * counts['DFL'], 50)
-                    .attr({ 'fill': 'blue', 'stroke-width': 0 });
-                  paper.rect(0 + w * counts['R'] + w * counts['DFL'], 0, w * counts['OTH'], 50)
-                    .attr({ 'fill': '#BCBCBC', 'stroke-width': 0 });
+                  chart.render();
                 }
               },
               amendments: {
@@ -473,28 +472,72 @@
         });
         
         // View for parties
+        var RaceBarChart = Backbone.View.extend({
+          initialize: function() {
+            this.template = $('#template-barchart-view').html();
+            this.partyView = new PartyView();
+          },
+          
+          render: function() {
+            var cands = this.model.get('candidates');
+            var pp = this.model.get('precincts_percentage');
+            var offsetX = 0, min = .1, max = .9;
+            
+            // Reign in precincts reporting a bit so that the visualization
+            // is not too skewed
+            pp = (pp < min) ? min : ((pp > max) ? max : pp);
+            // Sort and create offsets
+            cands = _.sortBy(cands, function(c) { return c.percentage * -1; });
+            cands = _.map(cands, function(c) {
+              c.width = pp * c.percentage / 100;
+              c.offsetX = offsetX;
+              offsetX += c.width;
+              c.color = this.partyView.getColor(c.party_id);
+              return c;
+            }, this);
+            // Add a point of data that represents the precints
+            // not reporting
+            cands.push({
+              width: (1 - pp),
+              offsetX: offsetX,
+              color: this.partyView.getColor()
+            });
+            
+            $(this.el).html(_.template(this.template, { c: cands, pp: pp }));
+            return this;
+          }
+        });
+        
+        // View for parties
         var PartyView = Backbone.View.extend({
           partyColors: {
             'IP': { colors: [ 'orange' ], title: 'Independence' },
             'R': { colors: [ 'red' ], title: 'Republican' },
             'DFL': { colors: [ 'blue' ], title: 'Democratic-Farmer-Labor' },
-            'LIB': { colors: [ '' ], title: 'Libertarian Party' },
-            'SWP': { colors: [ '' ], title: 'Socialist Workers Party' },
-            'CP': { colors: [ '' ], title: 'Constitution Party' },
-            'CG': { colors: [ '' ], title: 'Constitutional Government' },
+            'LIB': { colors: [ 'aqua' ], title: 'Libertarian Party' },
+            'SWP': { colors: [ 'navy' ], title: 'Socialist Workers Party' },
+            'CP': { colors: [ 'maroon' ], title: 'Constitution Party' },
+            'CG': { colors: [ 'yellow' ], title: 'Constitutional Government' },
             'GP': { colors: [ 'green' ], title: 'Green Party' },
-            'GR': { colors: [ '' ], title: 'Grassroots Party' },
-            'MOP': { colors: [ '' ], title: 'Minnesota Open Progressives' },
-            'EDP': { colors: [ '' ], title: 'Ecology Democracy Party' },
-            'IND': { colors: [ '' ], title: 'Independent' },
-            'SL': { colors: [ '' ], title: 'Socialism and Liberation' },
-            'JP': { colors: [ '' ], title: 'Justice Party' },
+            'GR': { colors: [ 'lime' ], title: 'Grassroots Party' },
+            'MOP': { colors: [ 'olive' ], title: 'Minnesota Open Progressives' },
+            'EDP': { colors: [ 'purple' ], title: 'Ecology Democracy Party' },
+            'IND': { colors: [ 'silver' ], title: 'Independent' },
+            'SL': { colors: [ 'teal' ], title: 'Socialism and Liberation' },
+            'JP': { colors: [ 'lightblue' ], title: 'Justice Party' },
             'NP': { colors: [ '#DCDCDC' ], title: 'Nonpartisan' },
-            'WI': { colors: [ '#999999' ], title: 'Write-In' }
+            'WI': { colors: [ '#999999' ], title: 'Write-In' },
+            'NONE': { colors: [ '#FAFAFA' ], title: 'No party assigned' }
           },
           
           initialize: function() {
             this.template = $('#template-party-value').html();
+          },
+          
+          getColor: function(party) {
+            return (!_.isUndefined(this.partyColors[party]) && 
+              this.partyColors[party].colors[0] !== '') ?
+              this.partyColors[party].colors[0] : this.partyColors.NONE.colors[0];
           },
           
           render: function(party, value) {
