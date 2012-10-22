@@ -168,6 +168,26 @@
     <script id="template-loading" type="text/template">
       <div class="loading-general"><span>Loading...</span></div>
     </script>
+    
+    <script id="template-dashboard-president" type="text/template">
+      <h4>Presidential race</h4>
+      <p>Note that these results are only for Minnesota.</p>
+    </script>
+    
+    <script id="template-dashboard-amendments" type="text/template">
+      <h4>Amendments</h4>
+      <p>Some amendments.</p>
+    </script>
+    
+    <script id="template-dashboard-state-leg" type="text/template">
+      <h4>State legislature</h4>
+      <p>Some stuff.</p>
+    </script>
+    
+    <script id="template-dashboard-congress" type="text/template">
+      <h4>Congress</h4>
+      <p>Some stuff.</p>
+    </script>
   
   
   
@@ -334,7 +354,37 @@
                 }),
                 className: 'dashboard-president',
                 render: function() {
-                  
+                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                }
+              },
+              amendments: {
+                collection: new Races([], {
+                  field: 'office_name',
+                  search: 'amendment'
+                }),
+                className: 'dashboard-amendments',
+                render: function() {
+                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                }
+              },
+              stateLeg: {
+                collection: new Races([], {
+                  field: 'office_name',
+                  search: 'amendment'
+                }),
+                className: 'dashboard-state-leg',
+                render: function() {
+                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                }
+              },
+              congress: {
+                collection: new Races([], {
+                  field: 'office_name',
+                  search: 'amendment'
+                }),
+                className: 'dashboard-congress',
+                render: function() {
+                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
                 }
               }
             };
@@ -352,7 +402,7 @@
               this.loading('.' + summary.className);
               summary.collection.fetch({
                 success: function(collection, response) {
-                  //console.log(collection);
+                  summary.render();
                 }
               });
             }, this);
