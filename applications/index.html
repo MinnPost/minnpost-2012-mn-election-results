@@ -484,8 +484,8 @@
             var offsetX = 0, min = .1, max = .9;
             
             // Reign in precincts reporting a bit so that the visualization
-            // is not too skewed
-            pp = (pp < min) ? min : ((pp > max) ? max : pp);
+            // is not too skewed (except when 100% reporting).
+            pp = (pp < min) ? min : ((pp > max && pp < 1) ? max : pp);
             // Sort and create offsets
             cands = _.sortBy(cands, function(c) { return c.percentage * -1; });
             cands = _.map(cands, function(c) {
