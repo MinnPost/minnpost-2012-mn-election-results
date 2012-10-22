@@ -264,11 +264,19 @@
           apiURL: 'http://box.scraperwiki.com/zzolo/mn-2012-election-results/sqlite?q=',
     
           url: function() {
-            return this.apiURL + encodeURI(
-              "SELECT * FROM results_general WHERE " +
-              this.options.field + " LIKE '%" + 
-              this.options.search + "%' " + 
-              "ORDER BY office_name LIMIT 100");
+            var query = [];
+            this.options.limit = this.options.limit || 100;
+            
+            // Put together query
+            query.push("SELECT * FROM results_general WHERE ");
+            query.push(this.options.field + " ");
+            query.push(_.isArray(this.options.search) ?
+              "IN ('" + this.options.search.join("', '") + "') "
+              : "LIKE '%" + this.options.search + "%' ");
+            query.push("ORDER BY office_name ");
+            query.push("LIMIT " + this.options.limit + " ");
+            
+            return this.apiURL + encodeURI(query.join(''));
           },
           
           model: Race,
