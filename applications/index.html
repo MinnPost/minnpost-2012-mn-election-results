@@ -207,7 +207,8 @@
     
     <script id="template-dashboard-amendments" type="text/template">
       <h4>Amendments</h4>
-      <p>Some amendments.</p>
+      <div id="amendment-1-canvas"></div>
+      <div id="amendment-2-canvas"></div>
     </script>
     
     <script id="template-dashboard-state-leg" type="text/template">
@@ -273,7 +274,7 @@
       Backbone.setDomLibrary(jQueryCustom);
       
       // Donut chart for Raphael (see http://jsfiddle.net/amadanNM/VdTH4/2/)
-      Raphael.fn.donutChart = function(cx, cy, r, rin, rout, values, labels, stroke) {
+      Raphael.fn.donutChart = function(cx, cy, r, rin, rout, values, stroke) {
         var paper = this;
         var rad = Math.PI / 180;
         var chart = this.set();
@@ -488,6 +489,16 @@
                 className: 'dashboard-amendments',
                 render: function() {
                   $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                  
+                  // Create donut chart
+                  var chart1 = new RaceDonutChart({
+                    el: '#amendment-1-canvas',
+                    model: this.collection.at(0)
+                  }).render();
+                  var chart2 = new RaceDonutChart({
+                    el: '#amendment-2-canvas',
+                    model: this.collection.at(1)
+                  }).render();
                 }
               },
               stateLeg: {
@@ -538,7 +549,7 @@
           }
         });
         
-        // View for parties
+        // View for a race in barchart form
         var RaceBarChart = Backbone.View.extend({
           initialize: function() {
             this.template = $('#template-barchart-view').html();
@@ -576,6 +587,63 @@
             });
             $(this.el).html(_.template(this.template, { c: cands, pp: pp }));
             
+            // Add tooltips
+            _.each(cands, function(c) {
+              $('.race-' + c.race_id + '.cand-' + c.candidate_id).qtip({
+                content: {
+                  text: _.template(this.tooltipTemplate, { c: c })
+                },
+                style: {
+                  classes: 'ui-tooltip-shadow ui-tooltip-light'
+                },
+                position: {
+                  at: 'top center',
+                  my: 'bottom center'
+                }
+              });
+            }, this);
+            return this;
+          }
+        });
+        
+        // View for race in donut chart form
+        var RaceDonutChart = Backbone.View.extend({
+          initialize: function() {
+            this.template = $('#template-donut-view').html();
+            this.tooltipTemplate = $('#template-tooltip-candidate').html();
+            this.partyView = new PartyView();
+          },
+          
+          render: function() {
+            var cands = this.model.get('candidates');
+            var pp = this.model.get('precincts_percentage');
+            var up = 1 - this.model.get('precincts_percentage');
+            var offsetX = 0, min = .1, max = .9;
+            
+            // Reign in precincts reporting a bit so that the visualization
+            // is not too skewed (except when 100% reporting).
+            pp = (pp < min) ? min : ((pp > max && pp < 1) ? max : pp);
+            // Sort and create offsets
+            cands = _.sortBy(cands, function(c) { return c.percentage * -1; });
+            cands = _.map(cands, function(c) {
+              c.rPercentage = pp * c.percentage / 100;
+              c.color = this.partyView.getColor(c.party_id);
+              return c;
+            }, this);
+            // Add a point of data that represents the precints
+            // not reporting
+            cands.push({
+              color: this.partyView.getColor(),
+              candidate: 'There are an unknown number of voters in ' + (up * 100).toFixed(2) + '% of precincts that have not reported yet',
+              rPercentage: up,
+              votes_candidate: 0
+            });
+            
+            // Render donut chart
+            var values = _.pluck(cands, 'rPercentage');
+            Raphael($(this.el).attr('id'), 400, 400).donutChart(200, 200, 50, 100, 50, values, '#fff');
+            
+            return
             // Add tooltips
             _.each(cands, function(c) {
               $('.race-' + c.race_id + '.cand-' + c.candidate_id).qtip({
