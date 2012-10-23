@@ -649,15 +649,14 @@
             var w = $(this.el).width();
             var h = $(this.el).height();
             var d = (w >= h) ? h : w;
-            Raphael($(this.el).attr('id'), w, h)
+            var chart = Raphael($(this.el).attr('id'), w, h)
               .donutChart(d / 2, d / 2, d / 2, d * .25, d * .95, values, colors, '#fff');
             
-            return
             // Add tooltips
-            _.each(cands, function(c) {
-              $('.race-' + c.race_id + '.cand-' + c.candidate_id).qtip({
+            _.each(chart, function(n, i) {
+              $(n.node).qtip({
                 content: {
-                  text: _.template(this.tooltipTemplate, { c: c })
+                  text: _.template(this.tooltipTemplate, { c: cands[i] })
                 },
                 style: {
                   classes: 'ui-tooltip-shadow ui-tooltip-light'
