@@ -38,6 +38,9 @@
 
   <!-- START: Embeddable -->
   <div class="node-body fieldlayout node-field-body">
+    <style type="text/css">
+      @import url('https://s3.amazonaws.com/data.minnpost/js/qtip2-master-20121022/jquery.qtip.min.css');
+    </style>
     
     <style type="text/css">
       #minnpost-2012-mn-election-results {
@@ -220,8 +223,17 @@
     <script id="template-barchart-view" type="text/template">
       <div class="barchart-container clear-block">
         <% for (var i in c) { %>
-          <div style="width: <%= c[i].width * 100 %>%; background-color: <%= c[i].color %>;"></div>
+          <div class="race-<%= c[i].race_id %> cand-<%= c[i].candidate_id %>"
+            style="width: <%= c[i].width * 100 %>%; background-color: <%= c[i].color %>;"></div>
         <% } %>
+      </div>
+    </script>
+    
+    <script id="template-tooltip-race" type="text/template">
+      <div class="tooltip-race-container">
+        <h5><%= c.candidate %></h5>
+        <div>Percent of votes: <%= c.percentage %>%</div>
+        <div>Number of votes: <%= _.formatNumber(c.votes_candidate) %></div>
       </div>
     </script>
   
@@ -237,11 +249,14 @@
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/backbone-0.9.2/backbone-min.js"></script>
     <!-- Date handling -->
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/moment.js-1.7.2/moment.min.js"></script>
+    <!-- Tooltips -->
+    <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/qtip2-master-20121022/jquerycustom.qtip.min.js"></script>
     
     <script type="text/javascript">
       // Add some helpful funcitons to Backboe, because that makes
       // sense.
       _.formatNumber = function(num) {
+        num = _.isUndefined(num) ? 0 : num;
         var array = num.toString().split('');
         var index = -3;
         while (array.length + index > 0) {
@@ -475,12 +490,14 @@
         var RaceBarChart = Backbone.View.extend({
           initialize: function() {
             this.template = $('#template-barchart-view').html();
+            this.tooltipTemplate = $('#template-tooltip-race').html();
             this.partyView = new PartyView();
           },
           
           render: function() {
             var cands = this.model.get('candidates');
             var pp = this.model.get('precincts_percentage');
+            var up = 1 - this.model.get('precincts_percentage');
             var offsetX = 0, min = .1, max = .9;
             
             // Reign in precincts reporting a bit so that the visualization
@@ -500,10 +517,28 @@
             cands.push({
               width: (1 - pp),
               offsetX: offsetX,
-              color: this.partyView.getColor()
+              color: this.partyView.getColor(),
+              candidate: 'There are an unknown number of voters in ' + (up * 100).toFixed(2) + '% of precincts that have not reported yet',
+              percentage: (up * 100).toFixed(2),
+              votes_candidate: 0
             });
-            
             $(this.el).html(_.template(this.template, { c: cands, pp: pp }));
+            
+            // Add tooltips
+            _.each(cands, function(c) {
+              $('.race-' + c.race_id + '.cand-' + c.candidate_id).qtip({
+                content: {
+                  text: _.template(this.tooltipTemplate, { c: c })
+                },
+                style: {
+                  classes: 'ui-tooltip-shadow ui-tooltip-light'
+                },
+                position: {
+                  at: 'top center',
+                  my: 'bottom center'
+                }
+              });
+            }, this);
             return this;
           }
         });
