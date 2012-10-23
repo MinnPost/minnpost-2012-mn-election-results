@@ -249,7 +249,8 @@
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/backbone-0.9.2/backbone-min.js"></script>
     <!-- Date handling -->
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/moment.js-1.7.2/moment.min.js"></script>
-    <!-- Tooltips -->
+    <!-- Drawing and Tooltips -->
+    <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/raphael-2.1.0/raphael-min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/qtip2-master-20121022/jquerycustom.qtip.min.js"></script>
     
     <script type="text/javascript">
@@ -271,7 +272,58 @@
       jQueryCustom = jQueryCustom.noConflict();
       Backbone.setDomLibrary(jQueryCustom);
       
-      // MAke the magic happen
+      // Donut chart for Raphael (see http://jsfiddle.net/amadanNM/VdTH4/2/)
+      Raphael.fn.donutChart = function(cx, cy, r, rin, rout, values, labels, stroke) {
+        var paper = this;
+        var rad = Math.PI / 180;
+        var chart = this.set();
+        var angle = 0, total = 0, start = 0;
+        
+        var sector = function(cx, cy, r, r2, startAngle, endAngle, params) {
+          var x1 = cx + r * Math.cos(-startAngle * rad),
+            x2 = cx + r * Math.cos(-endAngle * rad),
+            y1 = cy + r * Math.sin(-startAngle * rad),
+            y2 = cy + r * Math.sin(-endAngle * rad),
+            xx1 = cx + r2 * Math.cos(-startAngle * rad),
+            xx2 = cx + r2 * Math.cos(-endAngle * rad),
+            yy1 = cy + r2 * Math.sin(-startAngle * rad),
+            yy2 = cy + r2 * Math.sin(-endAngle * rad);
+          
+          return paper.path(['M', xx1, yy1,
+            'L', x1, y1, 
+            'A', r, r, 0, +(endAngle - startAngle > 180), 0, x2, y2, 
+            'L', xx2, yy2, 
+            'A', rin, rin, 0, +(endAngle - startAngle > 180), 1, xx1, yy1, 'z']
+          ).attr(params);
+        };
+        var processSector = function(j) {
+          var value = values[j];
+          var angleplus = 360 * value / total;
+          var popangle = angle + (angleplus / 2);
+          var color = Raphael.hsb(start, .75, 1);
+          var bcolor = Raphael.hsb(start, 1, 1);
+          var ms = 500, delta = 30;
+              
+          var p = sector(cx, cy, r, rin,angle, angle + angleplus, {
+            fill: '90-' + bcolor + '-' + color, stroke: stroke, 'stroke-width': 1 });
+          
+          angle += angleplus;
+          chart.push(p);
+          start += .1;
+        };
+        
+        // Get total
+        for (var i = 0, ii = values.length; i < ii; i++) {
+          total += values[i];
+        }
+        // Process each sector
+        for (i = 0; i < ii; i++) {
+          processSector(i);
+        }
+        return chart;
+      };
+      
+      // Make the magic happen
       (function($, w, undefined) {
       
         // Model for a single race
