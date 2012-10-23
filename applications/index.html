@@ -229,8 +229,8 @@
       </div>
     </script>
     
-    <script id="template-tooltip-race" type="text/template">
-      <div class="tooltip-race-container">
+    <script id="template-tooltip-candidate" type="text/template">
+      <div class="tooltip-candidate-container">
         <h5><%= c.candidate %></h5>
         <div>Percent of votes: <%= c.percentage %>%</div>
         <div>Number of votes: <%= _.formatNumber(c.votes_candidate) %></div>
@@ -490,7 +490,7 @@
         var RaceBarChart = Backbone.View.extend({
           initialize: function() {
             this.template = $('#template-barchart-view').html();
-            this.tooltipTemplate = $('#template-tooltip-race').html();
+            this.tooltipTemplate = $('#template-tooltip-candidate').html();
             this.partyView = new PartyView();
           },
           
