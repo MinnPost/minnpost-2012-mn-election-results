@@ -83,6 +83,10 @@
         font-size: .5em;
       }
       
+      .race-status {
+        color: #ABABAB;
+      }
+      
       /**
        * Dashboard
        */
@@ -137,18 +141,19 @@
         <% if (typeof question_body != 'undefined' && question_body != '') { %>
           <p><%= question_body %></p>
         <% } %>
+        
+        <p class="race-status">
         <% if (typeof races == 'undefined') { %>
-          <p>
-            Last updated: <%= updated_moment.format('MMM Do h:mm a') %><br />
-            Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
-            (<%= (precincts_percentage * 100).toFixed(2) %>%)
-          </p>
+          Last updated at <strong><%= updated_moment.format('MMM Do h:mm A') %></strong> with
+          <strong><%= (precincts_percentage * 100).toFixed(2) %>%</strong> 
+            (<%= _.formatNumber(precincts_reporting) %> 
+            of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
         <% } else { %>
-          <p>
-            Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
-            (<%= (precincts_percentage * 100).toFixed(2) %>%)
-          </p>
+          <strong><%= (precincts_percentage * 100).toFixed(2) %>%</strong> 
+            (<%= _.formatNumber(precincts_reporting) %> 
+            of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
         <% } %>
+        </p>
         
         <table>
           <thead>
@@ -220,7 +225,7 @@
     <script id="template-dashboard-president" type="text/template">
       <div class="dashboard-president-container">
         <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">permalink</a></h4>
-        <p><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting. <br />
+        <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting. <br />
           Minnesota results only.</p>
           
         <table>
