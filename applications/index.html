@@ -79,6 +79,22 @@
         vertical-align: middle;
       }
       
+      .race-permalink {
+        font-size: .5em;
+      }
+      
+      /**
+       * Dashboard
+       */
+      .dashboard-header-container {
+        text-align: center;
+        margin-bottom: 2em;
+      }
+      .dashboard-president-container {
+        width: 50%;
+        float: left;
+      }
+      
       .barchart-container {
         margin-bottom: 1em;
       }
@@ -113,12 +129,11 @@
         <p>No race or contest found.</p>
       <% } else { %>
         <% if (typeof races == 'undefined') { %>
-          <h3><%= race %></h3>
+          <h3><%= race %> <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a></h3>
         <% } else { %>
-          <h4><%= race %></h4>
+          <h4><%= race %> <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a></h4>
         <% } %>
         
-        <a href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a>
         <% if (typeof question_body != 'undefined' && question_body != '') { %>
           <p><%= question_body %></p>
         <% } %>
@@ -163,7 +178,7 @@
     
     <script id="template-races-view" type="text/template">
       <h3><%= title %></h3>
-      <p>Last updated: <%= updatedMoment.format('MMM Do h:mm a') %></p>
+      <p>Last updated: <%= updatedMoment.format('MMM Do h:mm A') %></p>
       
       <div class="races-races-list">
         <% if (typeof races == 'undefined' || races === '') { %>
@@ -184,8 +199,11 @@
       <div class="dashboard-header-container">
         <p>
           <% if (typeof updated != 'undefined') { %>
-            Last updated at <%= moment.unix(updated.value_blob).format('MMM Do h:mm a') %>.
-            <%= (precincts_reporting * 100 / total_effected_precincts).toFixed(2) %>% reporting (<%= precincts_reporting %> of <%= total_effected_precincts %>).
+            Last updated at <strong><%= moment.unix(updated.value_blob).format('MMM Do h:mm A') %></strong> with
+            <strong><%= (precincts_reporting.value_blob * 100 / total_effected_precincts.value_blob).toFixed(2) %>%</strong> 
+              (<%= _.formatNumber(precincts_reporting.value_blob) %> 
+              of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting;
+            tracking <strong><%= _.formatNumber(races.value_blob) %></strong> races.
           <% } %>  
         </p>
       </div>
@@ -200,28 +218,28 @@
     </script>
     
     <script id="template-dashboard-president" type="text/template">
-      <h4>Presidential race</h4>
-      <p>Note that these results are only for Minnesota.
-        Precincts reporting: <%= precincts_reporting %> of <%= total_effected_precincts %> 
-        (<%= (precincts_percentage * 100).toFixed(2) %>%)</p>
-        
-      <table>
-        <tbody>
-          <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
-          <% for (var c in candidates) { %>
-            <% if (_.contains(['R', 'DFL'], candidates[c].party_id)) { %>
-              <tr>
-                <th><%= candidates[c].candidate %></th>
-                <th><%= candidates[c].partyOutput %></th>
-                <th><%= _.formatNumber(candidates[c].votes_candidate) %></th>
-                <th><%= candidates[c].percentage %></th>
-              </tr>
+      <div class="dashboard-president-container">
+        <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">permalink</a></h4>
+        <p><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting. <br />
+          Minnesota results only.</p>
+          
+        <table>
+          <tbody>
+            <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
+            <% for (var c in candidates) { %>
+              <% if (_.contains(['R', 'DFL'], candidates[c].party_id)) { %>
+                <tr>
+                  <th><%= candidates[c].candidate %></th>
+                  <th><%= candidates[c].partyOutput %></th>
+                  <th><%= candidates[c].percentage %>%</th>
+                </tr>
+              <% } %>
             <% } %>
-          <% } %>
-        </tbody>
-      </table>
-      
-      <div class="dashboard-president-chart"></div>
+          </tbody>
+        </table>
+        
+        <div class="dashboard-president-chart"></div>
+      </div>
     </script>
     
     <script id="template-dashboard-amendments" type="text/template">
