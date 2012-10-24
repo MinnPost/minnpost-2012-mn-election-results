@@ -156,6 +156,11 @@
       <% } %>
     </script>
     
+    <script id="template-service-down" type="text/template">
+      <h3>We are sorry</h3>
+      <p>The election data service seems to be down.</p>
+    </script>
+    
     <script id="template-races-view" type="text/template">
       <h3><%= title %></h3>
       <p>Last updated: <%= updatedMoment.format('MMM Do h:mm a') %></p>
@@ -170,14 +175,20 @@
     </script>
     
     <script id="template-dashboard-view" type="text/template">
-      <h3>Election Results</h3>
-      <p>
-        Last updated: <br />
-        Precincts reporting: 
-        (%)
-      </p>
+      <div class="dashboard-header"></div>
       
       <div class="dashboard-summaries"></div>
+    </script>
+    
+    <script id="template-dashboard-header" type="text/template">
+      <div class="dashboard-header-container">
+        <p>
+          <% if (typeof updated != 'undefined') { %>
+            Last updated at <%= moment.unix(updated.value_blob).format('MMM Do h:mm a') %>.
+            <%= (precincts_reporting * 100 / total_effected_precincts).toFixed(2) %>% reporting (<%= precincts_reporting %> of <%= total_effected_precincts %>).
+          <% } %>  
+        </p>
+      </div>
     </script>
     
     <script id="template-party-value" type="text/template">
@@ -255,6 +266,7 @@
     <!-- Underscore, a custom jquery, and backbone for app logic -->
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/underscore-1.3.3/underscore-min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/jquery-custom-master-20120606/jquery-1.7.2.custom.min.js"></script>
+    <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/jquery.jsonp-2.4.0/jquerycustom.jsonp-2.4.0.min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/backbone-0.9.2/backbone-min.js"></script>
     <!-- Date handling -->
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/moment.js-1.7.2/moment.min.js"></script>
@@ -334,7 +346,7 @@
       // Make the magic happen
       (function($, w, undefined) {
         // API URL for easy switching
-        var baseAPIURL = 'http://ec2-23-21-1-12.compute-1.amazonaws.com/?box=ubuntu&callback=?&q='
+        var baseAPIURL = 'http://ec2-174-129-137-145.compute-1.amazonaws.com/?box=ubuntu&callback=?&q='
         //var baseAPIURL = 'http://box.scraperwiki.com/zzolo/mn-2012-election-results/sqlite?callback=?&q='
       
         // Model for a single race
@@ -460,10 +472,14 @@
         
         // View for dashbard
         var DashboardView = Backbone.View.extend({
+          metadataURL: baseAPIURL + encodeURI("SELECT * FROM swvariables"),
+          
           initialize: function() {
             this.partyView = new PartyView();
             this.template = $('#template-dashboard-view').html();
             this.loadingTemplate = $('#template-loading').html();
+            this.headerTemplate = $('#template-dashboard-header').html();
+            this.serviceDownTemplate = $('#template-service-down').html();
             
             this.summaries = {
               president: {
@@ -534,6 +550,22 @@
           render: function() {
             this.$el = this.$el || $(this.el);
             this.$el.html(_.template(this.template, {}));
+            
+            // Get metadata for races.  This will also be the global-ish
+            // mechanism to note if the service is down.
+            var thisView = this;
+            this.loading('.dashboard-header');
+            $.jsonp({
+              url: this.metadataURL,
+              success: function(data) {
+                thisView.metadata = {};
+                _.each(data, function(d) { thisView.metadata[d.name] = d; });
+                $('.dashboard-header').html(_.template(thisView.headerTemplate, thisView.metadata));
+              },
+              error: function(e) {
+                $('#render-container').html(_.template(thisView.serviceDownTemplate, {}));
+              }
+            });
             
             // Add sumary containers and start rendering
             this.$summaries = this.$el.find('.dashboard-summaries');
