@@ -337,12 +337,13 @@
       Backbone.setDomLibrary(jQueryCustom);
       
       // Donut chart for Raphael (see http://jsfiddle.net/amadanNM/VdTH4/2/)
-      Raphael.fn.donutChart = function(cx, cy, r, rin, rout, values, colors, stroke) {
+      Raphael.fn.donutChart = function(cx, cy, r, rin, rout, values, colors, divider, stroke) {
         var paper = this;
         var rad = Math.PI / 180;
         var chart = this.set();
         var angle = 0, total = 0, start = 0;
-        
+        divider = (_.isNumber(divider)) ? divider : 1;
+                
         var sector = function(cx, cy, r, r2, startAngle, endAngle, params) {
           var x1 = cx + r * Math.cos(-startAngle * rad),
             x2 = cx + r * Math.cos(-endAngle * rad),
@@ -362,13 +363,15 @@
         };
         var processSector = function(j) {
           var value = values[j];
-          var angleplus = 360 * value / total;
+          var angleplus = 360 * value / total / divider;
           var popangle = angle + (angleplus / 2);
-          var color = colors[j];
           var ms = 500, delta = 30;
-              
-          var p = sector(cx, cy, r, rin,angle, angle + angleplus, {
-            fill: color, stroke: stroke, 'stroke-width': 1 });
+          var attr = { fill: colors[j], 'stroke-width': 0 };
+          if (stroke) {
+            attr.stroke = stroke;
+            attr['stroke-width'] = 1;
+          }
+          var p = sector(cx, cy, r, rin,angle, angle + angleplus, attr);
           
           angle += angleplus;
           chart.push(p);
@@ -736,7 +739,7 @@
             var h = $(this.el).height();
             var d = (w >= h) ? h : w;
             var chart = Raphael($(this.el).attr('id'), w, h)
-              .donutChart(d / 2, d / 2, d / 2, d * .25, d * .95, values, colors, '#fff');
+              .donutChart(d / 2, d / 2, d / 2, d * .25, d * .95, values, colors, 1.5, '#fff');
             
             // Add tooltips
             _.each(chart, function(n, i) {
