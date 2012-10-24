@@ -796,7 +796,7 @@
             'dashboard': 'showDashboard',
             'search/:term': 'search',
             'race/:race': 'showRace',
-            'races/:races': 'showRaceGroup',
+            'races/*races': 'showRaceGroup',
             '*default': 'defaultRoute'
           },
         
@@ -846,8 +846,10 @@
           
           showRaceGroup: function(races) {
             this.races.options = this.races.options || {};
-            this.races.options.field = 'office_name';
-            this.races.options.search = races;
+            races = races.split('/');
+            
+            this.races.options.field = (races.length == 1) ? 'office_name' : races.shift();
+            this.races.options.search = races.shift();
             this.racesView.loading();
             this.races.fetch();
           }
