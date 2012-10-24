@@ -54,16 +54,17 @@
       .hidden {
         display: none;
       }
-      
       .footnote {
         font-size: .75em;
         font-style: italic;
         color: #414141;
         margin-top: 1em;
       }
-      
       #minnpost-2012-mn-election-results table {
         width: 100%;
+      }
+      #minnpost-2012-mn-election-results .inner-container {
+        padding: 0 .5em;
       }
       
       .loading-general {
@@ -94,9 +95,11 @@
         text-align: center;
         margin-bottom: 2em;
       }
-      .dashboard-president-container {
+      .dashboard-president-container,
+      .dashboard-amendments-container {
         width: 50%;
         float: left;
+        margin-bottom: 1em;
       }
       
       .barchart-container {
@@ -109,7 +112,8 @@
       
       .donut-chart-container {
         height: 200px;
-        width: 200px;
+        width: 50%;
+        float: left;
       }
     </style>
     
@@ -183,13 +187,13 @@
     
     <script id="template-races-view" type="text/template">
       <h3><%= title %></h3>
-      <p>Last updated: <%= updatedMoment.format('MMM Do h:mm A') %></p>
+      <p class="race-status">Last updated at <%= updated_moment.format('MMM Do h:mm A') %>.</p>
       
       <div class="races-races-list">
-        <% if (typeof races == 'undefined' || races === '') { %>
+        <% if (typeof racesRendered == 'undefined' || races === '') { %>
           <p>No races or contests found.</p>
         <% } else { %>
-          <%= races %>
+          <%= racesRendered %>
         <% } %>
       </div>
     </script>
@@ -224,33 +228,41 @@
     
     <script id="template-dashboard-president" type="text/template">
       <div class="dashboard-president-container">
-        <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">permalink</a></h4>
-        <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting. <br />
-          Minnesota results only.</p>
-          
-        <table>
-          <tbody>
-            <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
-            <% for (var c in candidates) { %>
-              <% if (_.contains(['R', 'DFL'], candidates[c].party_id)) { %>
-                <tr>
-                  <th><%= candidates[c].candidate %></th>
-                  <th><%= candidates[c].partyOutput %></th>
-                  <th><%= candidates[c].percentage %>%</th>
-                </tr>
+        <div class="inner-container">
+          <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">permalink</a></h4>
+          <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting. <br />
+            Minnesota results only.</p>
+            
+          <table>
+            <tbody>
+              <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
+              <% for (var c in candidates) { %>
+                <% if (_.contains(['R', 'DFL'], candidates[c].party_id)) { %>
+                  <tr>
+                    <th><%= candidates[c].candidate %></th>
+                    <th><%= candidates[c].partyOutput %></th>
+                    <th><%= candidates[c].percentage %>%</th>
+                  </tr>
+                <% } %>
               <% } %>
-            <% } %>
-          </tbody>
-        </table>
-        
-        <div class="dashboard-president-chart"></div>
+            </tbody>
+          </table>
+          
+          <div class="dashboard-president-chart"></div>
+        </div>
       </div>
     </script>
     
     <script id="template-dashboard-amendments" type="text/template">
-      <h4>Amendments</h4>
-      <div id="amendment-1-canvas" class="donut-chart-container"></div>
-      <div id="amendment-2-canvas" class="donut-chart-container"></div>
+      <div class="dashboard-amendments-container">
+        <div class="inner-container">
+          <h4>Amendments</h4>
+          <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.</p>
+          
+          <div id="amendment-1-canvas" class="donut-chart-container"></div>
+          <div id="amendment-2-canvas" class="donut-chart-container"></div>
+        </div>
+      </div>
     </script>
     
     <script id="template-dashboard-state-leg" type="text/template">
@@ -433,6 +445,23 @@
           
           initialize: function(models, options) {
             this.options = options || {};
+          },
+          
+          exportData: function() {
+            var data = {};
+            data.races = this.toJSON();
+
+            // Determine title
+            data.title = this.options.search;
+            
+            // Get first race to get some aggregate values
+            data.updated = this.at(0).get('updated');
+            data.updated_moment = this.at(0).get('updated_moment');
+            data.precincts_percentage = this.at(0).get('precincts_percentage');
+            data.precincts_reporting = this.at(0).get('precincts_reporting');
+            data.total_effected_precincts = this.at(0).get('total_effected_precincts');
+            
+            return data;
           }
         });
         
@@ -463,27 +492,18 @@
           }, 
           
           render: function() {
-            var races = [];
-            var tData = {};
-            var first;
-            
-            // Determine title
-            tData.title = this.collection.options.search;
-            
-            // Get first race to get some aggregate values
-            first = this.collection.at(0);
-            tData.updated = first.get('updated');
-            tData.updatedMoment = first.get('updated_moment');
+            var data = this.collection.exportData();
+            data.racesRendered = [];
             
             // Render each race
             this.collection.each(function(r) {
-              var data = r.toJSON();
-              data.races = true;
-              races.push(_.template(this.raceTemplate, data));
+              var rData = r.toJSON();
+              rData.races = true;
+              data.racesRendered.push(_.template(this.raceTemplate, rData));
             }, this);
-            tData.races = races.join(' ');
+            data.racesRendered = data.racesRendered.join(' ');
             
-            $(this.el).html(_.template(this.template, tData));
+            $(this.el).html(_.template(this.template, data));
             return this;
           },
           
@@ -534,7 +554,7 @@
                 }),
                 className: 'dashboard-amendments',
                 render: function() {
-                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), this.collection.exportData()));
                   
                   // Create donut chart
                   var chart1 = new RaceDonutChart({
