@@ -101,7 +101,10 @@
         float: left;
         margin-bottom: 1em;
       }
-      
+      .dashboard-amendments-amendment {
+        width: 50%;
+        float: left;
+      }
       .barchart-container {
         margin-bottom: 1em;
       }
@@ -112,8 +115,7 @@
       
       .donut-chart-container {
         height: 200px;
-        width: 50%;
-        float: left;
+        width: 100%;
       }
     </style>
     
@@ -256,11 +258,17 @@
     <script id="template-dashboard-amendments" type="text/template">
       <div class="dashboard-amendments-container">
         <div class="inner-container">
-          <h4>Amendments</h4>
+          <h4>Amendments <a class="race-permalink"  title="Permanent link to this race" href="#races/office_name/amendment">permalink</a></h4>
           <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.</p>
           
-          <div id="amendment-1-canvas" class="donut-chart-container"></div>
-          <div id="amendment-2-canvas" class="donut-chart-container"></div>
+          <div class="dashboard-amendments-amendment">
+            <h5>Marriage Amendment</h5>
+            <div id="amendment-1-canvas" class="donut-chart-container"></div>
+          </div>
+          <div class="dashboard-amendments-amendment">
+            <h5>Voter ID Amendment</h5>
+            <div id="amendment-2-canvas" class="donut-chart-container"></div>
+          </div>
         </div>
       </div>
     </script>
