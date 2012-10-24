@@ -119,6 +119,9 @@
         <% } %>
         
         <a href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a>
+        <% if (typeof question_body != 'undefined' && question_body != '') { %>
+          <p><%= question_body %></p>
+        <% } %>
         <% if (typeof races == 'undefined') { %>
           <p>
             Last updated: <%= updated_moment.format('MMM Do h:mm a') %><br />
@@ -363,6 +366,7 @@
               parsed.precincts_reporting = response[0].precincts_reporting;
               parsed.total_effected_precincts = response[0].total_effected_precincts;
               parsed.precincts_percentage = parsed.precincts_reporting / parsed.total_effected_precincts;
+              parsed.question_body = response[0].question_body;
             }
             return parsed;
           }
