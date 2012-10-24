@@ -749,7 +749,7 @@
             var h = $(this.el).height();
             var d = (w >= h) ? h : w;
             var chart = Raphael($(this.el).attr('id'), w, h)
-              .donutChart(d / 2, d / 2, d / 2, d * .25, d * .95, values, colors, 1.5, '#fff');
+              .donutChart(w / 2, h / 2, d / 2, d * .25, d * .95, values, colors, 1.5, '#fff');
             
             // Add tooltips
             _.each(chart, function(n, i) {
