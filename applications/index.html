@@ -542,6 +542,10 @@
               this.get('race_id') + "' LIMIT 100");
           },
           
+          blankCandidate: {
+            party_id: 'UNK',
+          },
+          
           initialize: function() {
             this.partyViewer = this.partyViewer || new PartyView();
           },
@@ -568,7 +572,8 @@
               parsed.question_body = response[0].question_body;
               
               // Determine winning party
-              winning = _.max(response, function(r) { return r.percentage });
+              winning = (parsed.precincts_percentage === 0) ? this.blankCandidate :
+                _.max(response, function(r) { return r.percentage });
               parsed.winning_race = winning;
               parsed.winning_party = winning.party_id;
               parsed.winning_party_color = this.partyViewer.getColor(winning.party_id);
@@ -940,13 +945,15 @@
             this.tooltipTemplate = $('#template-race-view').html();
             this.partyView = new PartyView();
             
+            // Silly sorting by party so that main parties are each end;
             this.collection.models = this.collection.sortBy(function(r) {
               var sort = '';
               if (r.get('winning_party') == 'DFL') { sort += 'AA'; }
               if (r.get('winning_party') == 'R') { sort += 'ZZ'; }
               sort += r.get('winning_party');
-              sort += (r.get('winning_party') == 'R' && r.get('all_in')) ? 'ZZ' : 
-                (r.get('all_in') ? 'AA' : 'ZZ');
+              if (r.get('winning_party') == 'R' && r.get('all_in')) { sort += 'ZZ'; }
+              else if (r.get('winning_party') == 'R' && !r.get('all_in')) { sort += 'AA'; }
+              else { sort += (r.get('all_in') ? 'AA' : 'ZZ'); }
               return sort;
             });
           },
@@ -1017,7 +1024,7 @@
             'YES': { colors: [ '#1AAD00' ], title: 'Yes' },
             'NO': { colors: [ '#B0B0B0' ], title: 'No' },
             'ESTIMATED BLANKS': { colors: [ '#FAFAFA' ], title: 'Estimated blanks' },
-            'UNK': { colors: [ '#FAFAFA' ], title: 'Unknown party' }
+            'UNK': { colors: [ '#AAAAAA' ], title: 'Unknown party' }
           },
           
           initialize: function() {
