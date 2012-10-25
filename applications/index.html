@@ -84,9 +84,13 @@
       .race-permalink {
         font-size: .5em;
       }
-      .refresh-link {
+      .refresh-link,
+      .dashboard-link {
         background-color: #EBEBEB;
         padding: .25em .5em;
+        margin-right: .25em;
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
         border-radius: 3px;
       }
       
@@ -181,6 +185,7 @@
       <% } else { %>
         <% if (typeof races == 'undefined') { %>
           <% if (typeof small == 'undefined' || small == false) { %>
+            <a href="#dashboard" class="dashboard-link">dashboard</a>
             <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
           <% } %>
           
@@ -227,7 +232,7 @@
                   <% if (typeof small == 'undefined' || small == false) { %>
                     <th><%= _.formatNumber(candidates[c].votes_candidate) %></th>
                   <% } %>
-                  <th><%= candidates[c].percentage %></th>
+                  <th><%= candidates[c].percentage %>%</th>
                 </tr>
               <% } %>
             <% } %>
@@ -237,6 +242,7 @@
     </script>
     
     <script id="template-races-view" type="text/template">
+      <a href="#dashboard" class="dashboard-link">dashboard</a>
       <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
       
       <h3><%= title %></h3>
