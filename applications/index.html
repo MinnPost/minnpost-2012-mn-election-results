@@ -110,6 +110,10 @@
         width: 50%;
         float: left;
       }
+      .state-leg-chart-container {
+        width: 50%;
+        float: left;
+      }
       .barchart-container {
         margin-bottom: 1em;
       }
@@ -121,6 +125,14 @@
       .donut-chart-container {
         height: 200px;
         width: 100%;
+      }
+      
+      .block-chart-block {
+        width: 10px;
+        height: 10px;
+        margin: 0 5px 5px 0;
+        background-color: #888888;
+        float: left;
       }
     </style>
     
@@ -285,7 +297,22 @@
     
     <script id="template-dashboard-state-leg" type="text/template">
       <h4>State legislature</h4>
-      <p>Some stuff.</p>
+      
+      <div class="clear-block">
+        <div class="state-leg-chart-container">
+          <div class="inner-container">
+            <h5>State Senate</h5>
+            <div class="state-leg-senate-chart"></div>
+          </div>
+        </div>
+        
+        <div class="state-leg-chart-container">
+          <div class="inner-container">
+            <h5>State House</h5>
+            <div class="state-leg-house-chart"></div>
+          </div>
+        </div>
+      </div>
     </script>
     
     <script id="template-dashboard-congress" type="text/template">
@@ -302,11 +329,26 @@
       </div>
     </script>
     
+    <script id="template-block-chart-view" type="text/template">
+      <div class="block-chart-container clear-block">
+        <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.</p>
+        
+        <% for (var r in races) { %>
+          <div class="block-chart-block block-<%= races[r].race_id %>"></div>
+        <% } %>
+      </div>
+    </script>
+    
     <script id="template-tooltip-candidate" type="text/template">
       <div class="tooltip-candidate-container">
         <h5><%= c.candidate %></h5>
         <div>Percent of votes: <%= c.percentage %>%</div>
         <div>Number of votes: <%= _.formatNumber(c.votes_candidate) %></div>
+      </div>
+    </script>
+    
+    <script id="template-tooltip-race" type="text/template">
+      <div class="tooltip-race-container">
       </div>
     </script>
   
@@ -442,18 +484,28 @@
         
         // Collection for races
         var Races = Backbone.Collection.extend({
+          specialQueries: {
+            'state-leg': ["SELECT * FROM results_general WHERE office_name LIKE '%state senator%' " +
+              "OR office_name LIKE '%state representative%' ORDER BY office_name"]
+          },
           url: function() {
             var query = [];
             this.options.limit = this.options.limit || 100;
             
             // Put together query
-            query.push("SELECT * FROM results_general WHERE ");
-            query.push(this.options.field + " ");
-            query.push(_.isArray(this.options.search) ?
-              "IN ('" + this.options.search.join("', '") + "') "
-              : "LIKE '%" + this.options.search + "%' ");
-            query.push("ORDER BY office_name ");
-            query.push("LIMIT " + this.options.limit + " ");
+            if (this.options.field === 'special' && 
+              _.isArray(this.specialQueries[this.options.search])) {
+              query = this.specialQueries[this.options.search];
+            }
+            else {
+              query.push("SELECT * FROM results_general WHERE ");
+              query.push(this.options.field + " ");
+              query.push(_.isArray(this.options.search) ?
+                "IN ('" + this.options.search.join("', '") + "') "
+                : "LIKE '%" + this.options.search + "%' ");
+              query.push("ORDER BY office_name ");
+              query.push("LIMIT " + this.options.limit + " ");
+            }
             
             return baseAPIURL + encodeURI(query.join(''));
           },
@@ -590,12 +642,24 @@
               },
               stateLeg: {
                 collection: new Races([], {
-                  field: 'office_name',
-                  search: 'amendment'
+                  field: 'special', search: 'state-leg'
                 }),
                 className: 'dashboard-state-leg',
                 render: function() {
                   $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+
+                  var senateView = new BlockChart({
+                    el: '.state-leg-senate-chart',
+                    collection: new Races(this.collection.filter(function(i) {
+                      return (i.get('race').toLowerCase().indexOf('state senator') !== -1);
+                    }), { field: 'special', search: 'state-leg' })
+                  }).render();
+                  var houseView = new BlockChart({
+                    el: '.state-leg-house-chart',
+                    collection: new Races(this.collection.filter(function(i) {
+                      return (i.get('race').toLowerCase().indexOf('state representative') !== -1);
+                    }), { field: 'special', search: 'state-leg' })
+                  }).render();
                 }
               },
               congress: {
@@ -756,6 +820,37 @@
               $(n.node).qtip({
                 content: {
                   text: _.template(this.tooltipTemplate, { c: cands[i] })
+                },
+                style: {
+                  classes: 'ui-tooltip-shadow ui-tooltip-light'
+                },
+                position: {
+                  at: 'top center',
+                  my: 'bottom center'
+                }
+              });
+            }, this);
+            return this;
+          }
+        });
+        
+        // View for a state leg
+        var BlockChart = Backbone.View.extend({
+          initialize: function() {
+            this.template = $('#template-block-chart-view').html();
+            this.tooltipTemplate = $('#template-tooltip-race').html();
+            this.partyView = new PartyView();
+          },
+          
+          render: function() {
+            var data= this.collection.exportData();
+            $(this.el).html(_.template(this.template, data));
+            
+            // Add tooltips
+            _.each(data.races, function(r, i) {
+              $('.block-' + r.race_id).qtip({
+                content: {
+                  text: _.template(this.tooltipTemplate, { r: r })
                 },
                 style: {
                   classes: 'ui-tooltip-shadow ui-tooltip-light'
