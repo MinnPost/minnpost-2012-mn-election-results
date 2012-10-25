@@ -142,6 +142,11 @@
         -khtml-opacity: 0.5;
         opacity: 0.5;
       }
+      .block-chart-count {
+        text-align: center;
+        margin-top: .5em;
+        font-size: 1.5em;
+      }
     </style>
     
     
@@ -170,7 +175,7 @@
       <% } else { %>
         <% if (typeof races == 'undefined') { %>
           <% if (typeof small == 'undefined' || small == false) { %>
-            <a href="<%= w.location.hash %>" class="refresh-link">refesh</a>
+            <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
           <% } %>
           
           <h3>
@@ -226,7 +231,7 @@
     </script>
     
     <script id="template-races-view" type="text/template">
-      <a href="<%= w.location.hash %>" class="refresh-link">refesh</a>
+      <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
       
       <h3><%= title %></h3>
       <p class="race-status">Last updated at <%= updated_moment.format('MMM Do h:mm A') %>.</p>
@@ -256,7 +261,7 @@
               of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting;
             tracking <strong><%= _.formatNumber(races.value_blob) %></strong> races.
           <% } %>
-          <a href="<%= w.location.hash %>" class="refresh-link">refesh</a>
+          <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
         </p>
       </div>
     </script>
@@ -348,12 +353,21 @@
     
     <script id="template-block-chart-view" type="text/template">
       <div class="block-chart-container clear-block">
-        <% for (var r in races) { %>
-          <a href="#race/<%= races[r].race_id %>" class="block-chart-block block-<%= races[r].race_id %> 
-            <% if (!races[r].all_in) { %>block-chart-not-in<% } %>" 
-              style="background-color: <%= races[r].winning_party_color %>;">
-          </a>
-        <% } %>
+        <div class="clear-block">
+          <% for (var r in races) { %>
+            <a href="#race/<%= races[r].race_id %>" class="block-chart-block block-<%= races[r].race_id %> 
+              <% if (!races[r].all_in) { %>block-chart-not-in<% } %>" 
+                style="background-color: <%= races[r].winning_party_color %>;">
+            </a>
+          <% } %>
+        </div>
+        
+        <div class="block-chart-count">
+          <% for (var p = 0, l = partyCounts.length; p < l; p++) { %>
+            <span style="color: <%= partyCounts[p].color %>;" title="<%= partyCounts[p].title %>"><%= partyCounts[p].count %></span>
+            <% if (p != l - 1) { %> - <% } %>
+          <% } %>
+        </div>
       </div>
     </script>
     
@@ -863,13 +877,32 @@
             this.template = $('#template-block-chart-view').html();
             this.tooltipTemplate = $('#template-race-view').html();
             this.partyView = new PartyView();
-          },
-          
-          render: function() {
+            
             this.collection.models = this.collection.sortBy(function(r) {
               return r.get('winning_party') + ((r.get('all_in')) ? 'AA' : 'BB');
             });
+          },
+          
+          partyCounts: function() {
+            var counts = {};
+            this.collection.map(function(r) {
+              var p = r.get('winning_party');
+              counts[p] = counts[p] || { 
+                party: p, 
+                count: 0,
+                title: this.partyView.getTitle(p),
+                color: this.partyView.getColor(p)
+              };
+              counts[p].count += 1;
+            }, this);
+            
+            return _.sortBy(counts, 'count').reverse();
+          },
+          
+          render: function() {
             var data = this.collection.exportData();
+            data.partyCounts = this.partyCounts();
+            
             $(this.el).html(_.template(this.template, data));
             
             // Add tooltips
@@ -912,7 +945,8 @@
             'JP': { colors: [ 'lightblue' ], title: 'Justice Party' },
             'NP': { colors: [ '#DCDCDC' ], title: 'Nonpartisan' },
             'WI': { colors: [ '#999999' ], title: 'Write-In' },
-            'NONE': { colors: [ '#FAFAFA' ], title: 'No party assigned' }
+            'NONE': { colors: [ '#FAFAFA' ], title: 'No party assigned' },
+            'UNK': { colors: [ '#FAFAFA' ], title: 'Unknown party' }
           },
           
           initialize: function() {
@@ -923,6 +957,12 @@
             return (!_.isUndefined(this.partyColors[party]) && 
               this.partyColors[party].colors[0] !== '') ?
               this.partyColors[party].colors[0] : this.partyColors.NONE.colors[0];
+          },
+          
+          getTitle: function(party) {
+            return (!_.isUndefined(this.partyColors[party]) && 
+              this.partyColors[party].title !== '') ?
+              this.partyColors[party].title : this.partyColors.UNK.title;
           },
           
           render: function(party, value) {
