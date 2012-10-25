@@ -254,8 +254,7 @@
       <div class="dashboard-president-container">
         <div class="inner-container">
           <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">permalink</a></h4>
-          <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting. <br />
-            Minnesota results only.</p>
+          <p class="race-status">Minnesota results only.</p>
             
           <table>
             <tbody>
@@ -280,8 +279,7 @@
     <script id="template-dashboard-amendments" type="text/template">
       <div class="dashboard-amendments-container">
         <div class="inner-container">
-          <h4>Amendments <a class="race-permalink"  title="Permanent link to this race" href="#races/office_name/amendment">permalink</a></h4>
-          <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.</p>
+          <h4>Amendments <a class="race-permalink"  title="Permanent link to the Amendment races" href="#races/office_name/amendment">permalink</a></h4>
           
           <div class="dashboard-amendments-amendment">
             <h5>Marriage Amendment</h5>
@@ -296,7 +294,7 @@
     </script>
     
     <script id="template-dashboard-state-leg" type="text/template">
-      <h4>State legislature</h4>
+      <h4>State legislature <a class="race-permalink"  title="Permanent link to the State Legislature races" href="#races/special/state-leg">permalink</a></h4>
       
       <div class="clear-block">
         <div class="state-leg-chart-container">
@@ -331,8 +329,6 @@
     
     <script id="template-block-chart-view" type="text/template">
       <div class="block-chart-container clear-block">
-        <p class="race-status"><%= (precincts_percentage * 100).toFixed(2) %>% (<%= _.formatNumber(precincts_reporting) %> of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.</p>
-        
         <% for (var r in races) { %>
           <div class="block-chart-block block-<%= races[r].race_id %>"></div>
         <% } %>
