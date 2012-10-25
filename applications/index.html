@@ -131,8 +131,16 @@
         width: 10px;
         height: 10px;
         margin: 0 5px 5px 0;
-        background-color: #888888;
+        background-color: #FAFAFA;
         float: left;
+      }
+      .block-chart-block.block-chart-not-in {
+        zoom: 1;
+        -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+        filter: alpha(opacity=50);
+        -moz-opacity:0.5;
+        -khtml-opacity: 0.5;
+        opacity: 0.5;
       }
     </style>
     
@@ -330,7 +338,10 @@
     <script id="template-block-chart-view" type="text/template">
       <div class="block-chart-container clear-block">
         <% for (var r in races) { %>
-          <div class="block-chart-block block-<%= races[r].race_id %>"></div>
+          <a href="#race/<%= races[r].race_id %>" class="block-chart-block block-<%= races[r].race_id %> 
+            <% if (!races[r].all_in) { %>block-chart-not-in<% } %>" 
+              style="background-color: <%= races[r].winning_party_color %>;">
+          </a>
         <% } %>
       </div>
     </script>
@@ -456,6 +467,7 @@
           
           parse: function(response) {
             var parsed = {};
+            var winning;
             this.partyViewer = this.partyViewer || new PartyView();
             
             parsed.candidates = response;
@@ -473,6 +485,15 @@
               parsed.total_effected_precincts = response[0].total_effected_precincts;
               parsed.precincts_percentage = parsed.precincts_reporting / parsed.total_effected_precincts;
               parsed.question_body = response[0].question_body;
+              
+              // Determine winning party
+              winning = _.max(response, function(r) { return r.percentage });
+              parsed.winning_race = winning;
+              parsed.winning_party = winning.party_id;
+              parsed.winning_party_color = this.partyViewer.getColor(winning.party_id);
+              
+              // Determine if 100% reporting
+              parsed.all_in = (parsed.precincts_percentage == 1) ? true : false;
             }
             return parsed;
           }
