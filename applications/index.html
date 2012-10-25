@@ -866,7 +866,7 @@
             // Sort and create offsets
             cands = _.sortBy(cands, function(c) { 
               return (c.candidate === 'YES') ? 'A' : c.candidate; 
-            });
+            }).reverse();
             cands = _.map(cands, function(c) {
               c.rPercentage = c.percentage / 100;
               c.color = this.partyView.getColor(c.candidate);
@@ -960,25 +960,25 @@
         // View for parties
         var PartyView = Backbone.View.extend({
           partyColors: {
-            'IP': { colors: [ 'orange' ], title: 'Independence' },
-            'R': { colors: [ 'red' ], title: 'Republican' },
-            'DFL': { colors: [ 'blue' ], title: 'Democratic-Farmer-Labor' },
-            'LIB': { colors: [ 'aqua' ], title: 'Libertarian Party' },
-            'SWP': { colors: [ 'navy' ], title: 'Socialist Workers Party' },
-            'CP': { colors: [ 'maroon' ], title: 'Constitution Party' },
-            'CG': { colors: [ 'yellow' ], title: 'Constitutional Government' },
-            'GP': { colors: [ 'green' ], title: 'Green Party' },
-            'GR': { colors: [ 'lime' ], title: 'Grassroots Party' },
-            'MOP': { colors: [ 'olive' ], title: 'Minnesota Open Progressives' },
-            'EDP': { colors: [ 'purple' ], title: 'Ecology Democracy Party' },
-            'IND': { colors: [ 'silver' ], title: 'Independent' },
-            'SL': { colors: [ 'teal' ], title: 'Socialism and Liberation' },
-            'JP': { colors: [ 'lightblue' ], title: 'Justice Party' },
+            'IP': { colors: [ '#FF7429' ], title: 'Independence' },
+            'R': { colors: [ '#AD001A' ], title: 'Republican' },
+            'DFL': { colors: [ '#0071AC' ], title: 'Democratic-Farmer-Labor' },
+            'LIB': { colors: [ '#FAD400' ], title: 'Libertarian Party' },
+            'SWP': { colors: [ '#FA00A2' ], title: 'Socialist Workers Party' },
+            'CP': { colors: [ '#FA5700' ], title: 'Constitution Party' },
+            'CG': { colors: [ '#FF7E38' ], title: 'Constitutional Government' },
+            'GP': { colors: [ '#25FA00' ], title: 'Green Party' },
+            'GR': { colors: [ '#A2FA00' ], title: 'Grassroots Party' },
+            'MOP': { colors: [ '#00A2FA' ], title: 'Minnesota Open Progressives' },
+            'EDP': { colors: [ '#56FF38' ], title: 'Ecology Democracy Party' },
+            'IND': { colors: [ '#FF7E38' ], title: 'Independent' },
+            'SL': { colors: [ '#EA75FF' ], title: 'Socialism and Liberation' },
+            'JP': { colors: [ '#FAD400' ], title: 'Justice Party' },
             'NP': { colors: [ '#DCDCDC' ], title: 'Nonpartisan' },
             'WI': { colors: [ '#999999' ], title: 'Write-In' },
             'NONE': { colors: [ '#FAFAFA' ], title: 'No party assigned' },
-            'YES': { colors: [ 'green' ], title: 'Yes' },
-            'NO': { colors: [ 'red' ], title: 'No' },
+            'YES': { colors: [ '#1AAD00' ], title: 'Yes' },
+            'NO': { colors: [ '#B0B0B0' ], title: 'No' },
             'ESTIMATED BLANKS': { colors: [ '#FAFAFA' ], title: 'Estimated blanks' },
             'UNK': { colors: [ '#FAFAFA' ], title: 'Unknown party' }
           },
