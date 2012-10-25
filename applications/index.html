@@ -62,6 +62,7 @@
       }
       #minnpost-2012-mn-election-results table {
         width: 100%;
+        font-size: .75em;
       }
       #minnpost-2012-mn-election-results .inner-container {
         padding: 0 .5em;
@@ -76,7 +77,7 @@
       }
       .loading-general span {
         padding: 10px 5px 10px 40px;
-        background: transparent url('images/ajax-loader.gif') center left no-repeat;
+        background: transparent url('https://s3.amazonaws.com/data.minnpost/2012-mn-election-results/images/ajax-loader.gif') center left no-repeat;
         vertical-align: middle;
       }
       
@@ -107,9 +108,14 @@
         margin-bottom: 1em;
       }
       .dashboard-amendments-amendment {
+        width: 100%;
+      }
+      .amendment-table-block,
+      .amendment-canvas-block {
         width: 50%;
         float: left;
       }
+      
       .state-leg-chart-container {
         width: 50%;
         float: left;
@@ -123,7 +129,7 @@
       }
       
       .donut-chart-container {
-        height: 200px;
+        height: 100px;
         width: 100%;
       }
       
@@ -305,13 +311,43 @@
         <div class="inner-container">
           <h4>Amendments <a class="race-permalink"  title="Permanent link to the Amendment races" href="#races/office_name/amendment">permalink</a></h4>
           
-          <div class="dashboard-amendments-amendment">
+          <div class="dashboard-amendments-amendment clear-block">
             <h5>Marriage Amendment</h5>
-            <div id="amendment-1-canvas" class="donut-chart-container"></div>
+            <div class="amendment-table-block">
+              <table>
+                <tbody>
+                  <% for (var c in races[0].candidates) { %>
+                    <tr>
+                      <th><%= races[0].candidates[c].candidate %></th>
+                      <th><%= races[0].candidates[c].percentage %>%</th>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="amendment-canvas-block">
+              <div id="amendment-1-canvas" class="donut-chart-container"></div>
+            </div>
           </div>
           <div class="dashboard-amendments-amendment">
             <h5>Voter ID Amendment</h5>
-            <div id="amendment-2-canvas" class="donut-chart-container"></div>
+            <div class="amendment-table-block">
+              <table>
+                <tbody>
+                  <% for (var c in races[1].candidates) { %>
+                    <tr>
+                      <th><%= races[1].candidates[c].candidate %></th>
+                      <th><%= races[1].candidates[c].percentage %>%</th>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="amendment-canvas-block">
+              <div id="amendment-2-canvas" class="donut-chart-container"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -828,20 +864,14 @@
             // is not too skewed (except when 100% reporting).
             pp = (pp < min) ? min : ((pp > max && pp < 1) ? max : pp);
             // Sort and create offsets
-            cands = _.sortBy(cands, function(c) { return c.percentage * -1; });
+            cands = _.sortBy(cands, function(c) { 
+              return (c.candidate === 'YES') ? 'A' : c.candidate; 
+            });
             cands = _.map(cands, function(c) {
-              c.rPercentage = pp * c.percentage / 100;
-              c.color = this.partyView.getColor(c.party_id);
+              c.rPercentage = c.percentage / 100;
+              c.color = this.partyView.getColor(c.candidate);
               return c;
             }, this);
-            // Add a point of data that represents the precints
-            // not reporting
-            cands.push({
-              color: this.partyView.getColor(),
-              candidate: 'There are an unknown number of voters in ' + (up * 100).toFixed(2) + '% of precincts that have not reported yet',
-              rPercentage: up,
-              votes_candidate: 0
-            });
             
             // Render donut chart
             var values = _.pluck(cands, 'rPercentage');
@@ -849,8 +879,9 @@
             var w = $(this.el).width();
             var h = $(this.el).height();
             var d = (w >= h) ? h : w;
+            // (cx, cy, r, rin, rout, values, colors, divider, stroke)
             var chart = Raphael($(this.el).attr('id'), w, h)
-              .donutChart(w / 2, h / 2, d / 2, d * .25, d * .95, values, colors, 1.5, '#fff');
+              .donutChart(w / 2, h - 1, h, w * .2, w * .95, values, colors, 2, '#fff');
             
             // Add tooltips
             _.each(chart, function(n, i) {
@@ -946,6 +977,9 @@
             'NP': { colors: [ '#DCDCDC' ], title: 'Nonpartisan' },
             'WI': { colors: [ '#999999' ], title: 'Write-In' },
             'NONE': { colors: [ '#FAFAFA' ], title: 'No party assigned' },
+            'YES': { colors: [ 'green' ], title: 'Yes' },
+            'NO': { colors: [ 'red' ], title: 'No' },
+            'ESTIMATED BLANKS': { colors: [ '#FAFAFA' ], title: 'Estimated blanks' },
             'UNK': { colors: [ '#FAFAFA' ], title: 'Unknown party' }
           },
           
