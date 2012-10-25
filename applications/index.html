@@ -169,9 +169,16 @@
         <p>No race or contest found.</p>
       <% } else { %>
         <% if (typeof races == 'undefined') { %>
-          <a href="<%= w.location.hash %>" class="refresh-link">refesh</a>
+          <% if (typeof small == 'undefined' || small == false) { %>
+            <a href="<%= w.location.hash %>" class="refresh-link">refesh</a>
+          <% } %>
           
-          <h3><%= race %> <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a></h3>
+          <h3>
+            <%= race %> 
+            <% if (typeof small == 'undefined' || small == false) { %>
+              <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a>
+            <% } %>
+          </h3>
         <% } else { %>
           <h4><%= race %> <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a></h4>
         <% } %>
@@ -194,9 +201,11 @@
         </p>
         
         <table>
-          <thead>
-            <tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
-          </thead>
+          <% if (typeof small == 'undefined' || small == false) { %>
+            <thead>
+              <tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
+            </thead>
+          <% } %>
           <tbody>
             <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
             <% for (var c in candidates) { %>
@@ -204,7 +213,9 @@
                 <tr>
                   <th><%= candidates[c].candidate %></th>
                   <th><%= candidates[c].partyOutput %></th>
-                  <th><%= _.formatNumber(candidates[c].votes_candidate) %></th>
+                  <% if (typeof small == 'undefined' || small == false) { %>
+                    <th><%= _.formatNumber(candidates[c].votes_candidate) %></th>
+                  <% } %>
                   <th><%= candidates[c].percentage %></th>
                 </tr>
               <% } %>
@@ -351,11 +362,6 @@
         <h5><%= c.candidate %></h5>
         <div>Percent of votes: <%= c.percentage %>%</div>
         <div>Number of votes: <%= _.formatNumber(c.votes_candidate) %></div>
-      </div>
-    </script>
-    
-    <script id="template-tooltip-race" type="text/template">
-      <div class="tooltip-race-container">
       </div>
     </script>
   
@@ -855,7 +861,7 @@
         var BlockChart = Backbone.View.extend({
           initialize: function() {
             this.template = $('#template-block-chart-view').html();
-            this.tooltipTemplate = $('#template-tooltip-race').html();
+            this.tooltipTemplate = $('#template-race-view').html();
             this.partyView = new PartyView();
           },
           
@@ -868,9 +874,11 @@
             
             // Add tooltips
             _.each(data.races, function(r, i) {
+              r.small = true;
+              
               $('.block-' + r.race_id).qtip({
                 content: {
-                  text: _.template(this.tooltipTemplate, { r: r })
+                  text: _.template(this.tooltipTemplate, r)
                 },
                 style: {
                   classes: 'ui-tooltip-shadow ui-tooltip-light'
