@@ -58,7 +58,9 @@
         font-size: .75em;
         font-style: italic;
         color: #414141;
-        margin-top: 1em;
+        margin-top: 3em;
+        border-top: 1px solid #EFEFEF;
+        padding-top: 1em;
       }
       #minnpost-2012-mn-election-results table {
         width: 100%;
@@ -96,6 +98,22 @@
       
       .race-status {
         color: #ABABAB;
+      }
+      
+      .bs-icon {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        margin-top: 1px;
+        line-height: 14px;
+        vertical-align: text-top;
+        background-image: url("https://s3.amazonaws.com/data.minnpost/js/bootstrap-2.0.3/img/glyphicons-halflings.png");
+        background-repeat: no-repeat;
+        zoom:1;
+        *display:inline;
+      }
+      .bs-icon-won {
+        background-position: -288px 0;
       }
       
       /**
@@ -170,7 +188,7 @@
       <div id="render-container">
       </div>
       
-      <p class="footnote">Election data provided by the <a href="http://www.sos.state.mn.us/" target="_blank">MN Secretary of State</a>.</p>
+      <p class="footnote">Unofficial election data provided by the <a href="http://www.sos.state.mn.us/" target="_blank">MN Secretary of State</a>.  Test data will be provided until 8PM on Election Night, November 6, 2012.</p>
     </div>
     
     <!-- Templates to be used in client side processing. -->
@@ -219,7 +237,7 @@
         <table>
           <% if (typeof small == 'undefined' || small == false) { %>
             <thead>
-              <tr><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
+              <tr><th></th><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
             </thead>
           <% } %>
           <tbody>
@@ -227,12 +245,13 @@
             <% for (var c in candidates) { %>
               <% if (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 10) { %>
                 <tr>
-                  <th><%= candidates[c].candidate %></th>
-                  <th><%= candidates[c].partyOutput %></th>
+                  <td><% if (all_in && candidates[c].won) { %><span class="bs-icon bs-icon-won"></span><% } %></td>
+                  <td><%= candidates[c].candidate %></td>
+                  <td><%= candidates[c].partyOutput %></td>
                   <% if (typeof small == 'undefined' || small == false) { %>
-                    <th><%= _.formatNumber(candidates[c].votes_candidate) %></th>
+                    <td><%= _.formatNumber(candidates[c].votes_candidate) %></td>
                   <% } %>
-                  <th><%= candidates[c].percentage %>%</th>
+                  <td><%= candidates[c].percentage %>%</td>
                 </tr>
               <% } %>
             <% } %>
@@ -298,9 +317,9 @@
               <% for (var c in candidates) { %>
                 <% if (_.contains(['R', 'DFL'], candidates[c].party_id)) { %>
                   <tr>
-                    <th><%= candidates[c].candidate %></th>
-                    <th><%= candidates[c].partyOutput %></th>
-                    <th><%= candidates[c].percentage %>%</th>
+                    <td><%= candidates[c].candidate %></td>
+                    <td><%= candidates[c].partyOutput %></td>
+                    <td><%= candidates[c].percentage %>%</td>
                   </tr>
                 <% } %>
               <% } %>
@@ -324,8 +343,8 @@
                 <tbody>
                   <% for (var c in races[0].candidates) { %>
                     <tr>
-                      <th><%= races[0].candidates[c].candidate %></th>
-                      <th><%= races[0].candidates[c].percentage %>%</th>
+                      <td><%= races[0].candidates[c].candidate %></td>
+                      <td><%= races[0].candidates[c].percentage %>%</td>
                     </tr>
                   <% } %>
                 </tbody>
@@ -337,14 +356,14 @@
             </div>
           </div>
           <div class="dashboard-amendments-amendment">
-            <h5>Voter ID Amendment</h5>
+            <h5>Voting Amendment</h5>
             <div class="amendment-table-block">
               <table>
                 <tbody>
                   <% for (var c in races[1].candidates) { %>
                     <tr>
-                      <th><%= races[1].candidates[c].candidate %></th>
-                      <th><%= races[1].candidates[c].percentage %>%</th>
+                      <td><%= races[1].candidates[c].candidate %></td>
+                      <td><%= races[1].candidates[c].percentage %>%</td>
                     </tr>
                   <% } %>
                 </tbody>
@@ -554,8 +573,12 @@
               parsed.winning_party = winning.party_id;
               parsed.winning_party_color = this.partyViewer.getColor(winning.party_id);
               
-              // Determine if 100% reporting
+              // Determine if 100% reporting and winning
               parsed.all_in = (parsed.precincts_percentage == 1) ? true : false;
+              parsed.candidates = _.map(parsed.candidates, function(c) {
+                c.won = (winning.candidate_id == c.candidate_id) ? true : false;
+                return c;
+              });
             }
             return parsed;
           }
@@ -565,7 +588,9 @@
         var Races = Backbone.Collection.extend({
           specialQueries: {
             'state-leg': ["SELECT * FROM results_general WHERE office_name LIKE '%state senator%' " +
-              "OR office_name LIKE '%state representative%' ORDER BY office_name"]
+              "OR office_name LIKE '%state representative%' ORDER BY office_name"],
+            'us-congress': ["SELECT * FROM results_general WHERE office_name LIKE '%u.s. senator%' " +
+              "OR office_name LIKE '%u.s. representative%' ORDER BY office_name"]
           },
           url: function() {
             var query = [];
@@ -887,7 +912,7 @@
             var d = (w >= h) ? h : w;
             // (cx, cy, r, rin, rout, values, colors, divider, stroke)
             var chart = Raphael($(this.el).attr('id'), w, h)
-              .donutChart(w / 2, h - 1, h, w * .2, w * .95, values, colors, 2, '#fff');
+              .donutChart(w / 2, h - 1, h, w * .2, w * .95, values, colors, 2);
             
             // Add tooltips
             _.each(chart, function(n, i) {
