@@ -941,7 +941,13 @@
             this.partyView = new PartyView();
             
             this.collection.models = this.collection.sortBy(function(r) {
-              return r.get('winning_party') + ((r.get('all_in')) ? 'AA' : 'BB');
+              var sort = '';
+              if (r.get('winning_party') == 'DFL') { sort += 'AA'; }
+              if (r.get('winning_party') == 'R') { sort += 'ZZ'; }
+              sort += r.get('winning_party');
+              sort += (r.get('winning_party') == 'R' && r.get('all_in')) ? 'ZZ' : 
+                (r.get('all_in') ? 'AA' : 'ZZ');
+              return sort;
             });
           },
           
