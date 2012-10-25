@@ -520,7 +520,7 @@
               query.push(_.isArray(this.options.search) ?
                 "IN ('" + this.options.search.join("', '") + "') "
                 : "LIKE '%" + this.options.search + "%' ");
-              query.push("ORDER BY office_name ");
+              query.push("ORDER BY office_name, percentage ");
               query.push("LIMIT " + this.options.limit + " ");
             }
             
@@ -860,7 +860,10 @@
           },
           
           render: function() {
-            var data= this.collection.exportData();
+            this.collection.models = this.collection.sortBy(function(r) {
+              return r.get('winning_party') + ((r.get('all_in')) ? 'AA' : 'BB');
+            });
+            var data = this.collection.exportData();
             $(this.el).html(_.template(this.template, data));
             
             // Add tooltips
