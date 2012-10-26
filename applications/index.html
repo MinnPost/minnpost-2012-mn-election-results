@@ -337,10 +337,10 @@
       
       <h4>Other races</h4>
       <ul>
-        <li><a href="#special/judicial">Judicial races</a></li>
-        <li><a href="#special/county-commissioner">County Commissioner races</a></li>
+        <li><a href="#races/special/judicial">Judicial races</a></li>
+        <li><a href="#races/office_name/County+Comissioner">County Commissioner races</a></li>
         <li><a href="#races/office_name/Soil+and+Water+Supervisor">Soil and Water Supervisor races</a></li>
-        <li><a href="#special/questions">Ballot questions</a></li>
+        <li><a href="#races/special/questions">Ballot questions</a></li>
         <li><a href="#races/office_name/Hospital+District">Hospital District races</a></li>
       </ul>
     </script>
@@ -634,7 +634,11 @@
             'state-leg': ["SELECT * FROM results_general WHERE office_name LIKE '%state senator%' " +
               "OR office_name LIKE '%state representative%' ORDER BY office_name"],
             'us-congress': ["SELECT * FROM results_general WHERE office_name LIKE '%u.s. senator%' " +
-              "OR office_name LIKE '%u.s. representative%' ORDER BY office_name"]
+              "OR office_name LIKE '%u.s. representative%' ORDER BY office_name"],
+            'judicial': ["SELECT * FROM results_general WHERE office_name LIKE '%judge%' " +
+              "OR office_name LIKE '%justice%' ORDER BY office_name"],
+            'questions': ["SELECT * FROM results_general WHERE office_name LIKE '%question%' " +
+              "OR office_name LIKE '%amendment%' ORDER BY office_name"]
           },
           url: function() {
             var query = [];
