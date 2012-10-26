@@ -70,7 +70,7 @@
         background-color: #FBFBFB;
       }
       #minnpost-2012-mn-election-results table td.td-won {
-        width: 16px;
+        width: 1%;
       }
       #minnpost-2012-mn-election-results table td.td-cand {
         width: 50%;
@@ -81,7 +81,7 @@
       #minnpost-2012-mn-election-results table td.td-votes {
         width: 15%;
       }
-      #minnpost-2012-mn-election-results table td.td-perc {
+      #minnpost-2012-mn-election-results table td.td-per {
         width: 10%;
       }
       
@@ -210,6 +210,13 @@
       .dashboard-congress-house .race-status,
       .dashboard-president-table h3,
       .dashboard-president-table .race-status {
+        display: none;
+      }
+      
+      .amendment-table-block h3,
+      .amendment-table-block .race-status,
+      .amendment-table-block p,
+      .amendment-table-block td.td-party {
         display: none;
       }
       
@@ -374,16 +381,7 @@
           <div class="dashboard-amendments-amendment clear-block">
             <h5>Marriage Amendment</h5>
             <div class="amendment-table-block">
-              <table>
-                <tbody>
-                  <% for (var c in races[0].candidates) { %>
-                    <tr>
-                      <td><%= races[0].candidates[c].candidate %></td>
-                      <td><%= races[0].candidates[c].percentage %>%</td>
-                    </tr>
-                  <% } %>
-                </tbody>
-              </table>
+              <div class="amendment-1-table-block"></div>
             </div>
             
             <div class="amendment-canvas-block">
@@ -393,16 +391,7 @@
           <div class="dashboard-amendments-amendment">
             <h5>Voting Amendment</h5>
             <div class="amendment-table-block">
-              <table>
-                <tbody>
-                  <% for (var c in races[1].candidates) { %>
-                    <tr>
-                      <td><%= races[1].candidates[c].candidate %></td>
-                      <td><%= races[1].candidates[c].percentage %>%</td>
-                    </tr>
-                  <% } %>
-                </tbody>
-              </table>
+              <div class="amendment-2-table-block"></div>
             </div>
             
             <div class="amendment-canvas-block">
@@ -788,16 +777,28 @@
                 }),
                 className: 'dashboard-amendments',
                 render: function() {
-                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), this.collection.exportData()));
+                  var amend1 = this.collection.at(0);
+                  var amend2 = this.collection.at(1);
+                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
                   
-                  // Create donut chart
+                  // Create donut and table chart
+                  amend1.set('small', true);
+                  amend2.set('small', true);
+                  var tableChart1 = new RaceView({
+                    el: '.amendment-1-table-block',
+                    model: amend1
+                  }).render();
                   var chart1 = new RaceDonutChart({
                     el: '#amendment-1-canvas',
-                    model: this.collection.at(0)
+                    model: amend1
+                  }).render();
+                  var tableChart2 = new RaceView({
+                    el: '.amendment-2-table-block',
+                    model: amend2
                   }).render();
                   var chart2 = new RaceDonutChart({
                     el: '#amendment-2-canvas',
-                    model: this.collection.at(1)
+                    model: amend2
                   }).render();
                 }
               },
