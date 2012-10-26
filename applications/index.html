@@ -66,6 +66,25 @@
         width: 100%;
         font-size: .75em;
       }
+      #minnpost-2012-mn-election-results table tr:nth-child(even) {
+        background-color: #FBFBFB;
+      }
+      #minnpost-2012-mn-election-results table td.td-won {
+        width: 16px;
+      }
+      #minnpost-2012-mn-election-results table td.td-cand {
+        width: 50%;
+      }
+      #minnpost-2012-mn-election-results table td.td-party {
+        width: 15%;
+      }
+      #minnpost-2012-mn-election-results table td.td-votes {
+        width: 15%;
+      }
+      #minnpost-2012-mn-election-results table td.td-perc {
+        width: 10%;
+      }
+      
       #minnpost-2012-mn-election-results .inner-container {
         padding: 0 .5em;
       }
@@ -271,13 +290,13 @@
                 )
               ) { %>
                 <tr>
-                  <td><% if (all_in && candidates[c].won) { %><span class="bs-icon bs-icon-won"></span><% } %></td>
-                  <td><%= candidates[c].candidate %></td>
-                  <td><%= candidates[c].partyOutput %></td>
+                  <td class="td-won"><% if (all_in && candidates[c].won) { %><span class="bs-icon bs-icon-won"></span><% } %></td>
+                  <td class="td-cand"><%= candidates[c].candidate %></td>
+                  <td class="td-party"><%= candidates[c].partyOutput %></td>
                   <% if (typeof small == 'undefined' || small == false) { %>
-                    <td><%= _.formatNumber(candidates[c].votes_candidate) %></td>
+                    <td class="td-votes"><%= _.formatNumber(candidates[c].votes_candidate) %></td>
                   <% } %>
-                  <td><%= candidates[c].percentage %>%</td>
+                  <td class="td-per"><%= candidates[c].percentage %>%</td>
                 </tr>
               <% } %>
             <% } %>
