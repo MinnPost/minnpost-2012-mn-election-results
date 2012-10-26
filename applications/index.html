@@ -207,7 +207,9 @@
       
       .dashboard-congress-senate h3,
       .dashboard-congress-senate .race-status,
-      .dashboard-congress-house .race-status {
+      .dashboard-congress-house .race-status,
+      .dashboard-president-table h3,
+      .dashboard-president-table .race-status {
         display: none;
       }
       
@@ -357,22 +359,8 @@
         <div class="inner-container">
           <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">permalink</a></h4>
           <p class="race-status">Minnesota results only.</p>
-            
-          <table>
-            <tbody>
-              <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
-              <% for (var c in candidates) { %>
-                <% if (_.contains(['R', 'DFL'], candidates[c].party_id)) { %>
-                  <tr>
-                    <td><%= candidates[c].candidate %></td>
-                    <td><%= candidates[c].partyOutput %></td>
-                    <td><%= candidates[c].percentage %>%</td>
-                  </tr>
-                <% } %>
-              <% } %>
-            </tbody>
-          </table>
           
+          <div class="dashboard-president-table"></div>
           <div class="dashboard-president-chart"></div>
         </div>
       </div>
@@ -780,7 +768,13 @@
                   $('.' + this.className).html(
                     _.template($('#template-' + this.className).html(), data));
                     
-                  // Create barchart
+                  // Create barchart and table
+                  race.set('small', true);
+                  race.set('partisan', true);
+                  var chart = new RaceView({
+                    el: '.' + this.className + '-table',
+                    model: race
+                  }).render();
                   var chart = new RaceBarChart({
                     el: '.' + this.className + '-chart',
                     model: race
@@ -1095,10 +1089,10 @@
             'JP': { colors: [ '#FAD400' ], title: 'Justice Party' },
             'NP': { colors: [ '#DCDCDC' ], title: 'Nonpartisan' },
             'WI': { colors: [ '#999999' ], title: 'Write-In' },
-            'NONE': { colors: [ '#FAFAFA' ], title: 'No party assigned' },
+            'NONE': { colors: [ '#F0F0F0' ], title: 'No party assigned' },
             'YES': { colors: [ '#1AAD00' ], title: 'Yes' },
             'NO': { colors: [ '#B0B0B0' ], title: 'No' },
-            'ESTIMATED BLANKS': { colors: [ '#FAFAFA' ], title: 'Estimated blanks' },
+            'ESTIMATED BLANKS': { colors: [ '#F0F0F0' ], title: 'Estimated blanks' },
             'UNK': { colors: [ '#AAAAAA' ], title: 'Unknown party' }
           },
           
