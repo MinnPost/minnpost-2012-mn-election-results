@@ -399,8 +399,12 @@
     </script>
     
     <script id="template-dashboard-congress" type="text/template">
-      <h4>Congress</h4>
-      <p>Some stuff.</p>
+      <h4>Congress <a class="race-permalink"  title="Permanent link to the US Congress races" href="#races/special/us-congress">permalink</a></h4>
+      <h5>US Senate</h5>
+      <div class="dashboard-congress-senate"></div>
+      
+      <h5>US House</h5>
+      <div class="dashboard-congress-house"></div>
     </script>
     
     <script id="template-barchart-view" type="text/template">
@@ -773,12 +777,13 @@
               },
               congress: {
                 collection: new Races([], {
-                  field: 'office_name',
-                  search: 'amendment'
+                  field: 'special',
+                  search: 'us-congress'
                 }),
                 className: 'dashboard-congress',
                 render: function() {
                   $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                  
                 }
               }
             };
