@@ -292,7 +292,7 @@
             <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
             <% for (var c in candidates) { %>
               <% if (
-                (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 5) &&
+                (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 5 || _.size(candidates) === 1) &&
                 ((typeof partisan == 'undefined') ||
                   ((typeof partisan != 'undefined' && partisan == true) && 
                   (candidates[c].party_id === 'R' || candidates[c].party_id === 'DFL'))
@@ -334,6 +334,15 @@
       <div class="dashboard-header"></div>
       
       <div class="dashboard-summaries"></div>
+      
+      <h4>Other races</h4>
+      <ul>
+        <li><a href="#special/judicial">Judicial races</a></li>
+        <li><a href="#special/county-commissioner">County Commissioner races</a></li>
+        <li><a href="#races/office_name/Soil+and+Water+Supervisor">Soil and Water Supervisor races</a></li>
+        <li><a href="#special/questions">Ballot questions</a></li>
+        <li><a href="#races/office_name/Hospital+District">Hospital District races</a></li>
+      </ul>
     </script>
     
     <script id="template-dashboard-header" type="text/template">
