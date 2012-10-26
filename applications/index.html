@@ -70,17 +70,27 @@
         padding: 0 .5em;
       }
       
+      #render-container {
+        min-height: 15em;
+      }
+      
+      .loading-general-container {
+      }
       .loading-general {
         width: 100%;
         text-align: center;
-        padding: 1em 2em;
+        padding: 2em 2em;
         color: #ABABAB;
         vertical-align: middle;
+        height: 100%;
+        line-height: 100%;
       }
       .loading-general span {
         padding: 10px 5px 10px 40px;
         background: transparent url('https://s3.amazonaws.com/data.minnpost/2012-mn-election-results/images/ajax-loader.gif') center left no-repeat;
         vertical-align: middle;
+        height: 100%;
+        line-height: 100%;
       }
       
       .race-permalink {
@@ -302,7 +312,9 @@
     </script>
     
     <script id="template-loading" type="text/template">
-      <div class="loading-general"><span>Loading...</span></div>
+      <div class="loading-general-container">
+        <div class="loading-general"><span>Loading...</span></div>
+      </div>
     </script>
     
     <script id="template-dashboard-president" type="text/template">
