@@ -185,6 +185,16 @@
         margin-top: .5em;
         font-size: 1.5em;
       }
+      
+      .dashboard-congress-senate h3,
+      .dashboard-congress-senate .race-status,
+      .dashboard-congress-house .race-status {
+        display: none;
+      }
+      
+      .dashboard-congress-house h3 {
+        font-size: .75em;
+      }
     </style>
     
     
@@ -253,7 +263,13 @@
           <tbody>
             <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
             <% for (var c in candidates) { %>
-              <% if (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 10) { %>
+              <% if (
+                (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 5) &&
+                ((typeof partisan == 'undefined') ||
+                  ((typeof partisan != 'undefined' && partisan == true) && 
+                  (candidates[c].party_id === 'R' || candidates[c].party_id === 'DFL'))
+                )
+              ) { %>
                 <tr>
                   <td><% if (all_in && candidates[c].won) { %><span class="bs-icon bs-icon-won"></span><% } %></td>
                   <td><%= candidates[c].candidate %></td>
@@ -451,8 +467,10 @@
     <script id="template-tooltip-candidate" type="text/template">
       <div class="tooltip-candidate-container">
         <h5><%= c.candidate %></h5>
-        <div>Percent of votes: <%= c.percentage %>%</div>
-        <div>Number of votes: <%= _.formatNumber(c.votes_candidate) %></div>
+        <% if (c.votes_candidate > 0) { %>
+          <div>Percent of votes: <%= c.percentage %>%</div>
+          <div>Number of votes: <%= _.formatNumber(c.votes_candidate) %></div>
+        <% } %>
       </div>
     </script>
   
@@ -670,8 +688,14 @@
             this.loadingTemplate = $('#template-loading').html();
           }, 
           
-          render: function() {
-            $(this.el).html(_.template(this.template, this.model.toJSON()));
+          render: function(append) {
+            append = _.isBoolean(append) ? append : false;
+            if (append) {
+              $(this.el).append(_.template(this.template, this.model.toJSON()));
+            }
+            else {
+              $(this.el).html(_.template(this.template, this.model.toJSON()));
+            }
             return this;
           },
           
@@ -741,8 +765,7 @@
                   var chart = new RaceBarChart({
                     el: '.' + this.className + '-chart',
                     model: race
-                  });
-                  chart.render();
+                  }).render();
                 }
               },
               amendments: {
@@ -796,6 +819,22 @@
                 render: function() {
                   $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
                   
+                  var senate = this.collection.pop();
+                  senate.set('small', true);
+                  senate.set('partisan', true);
+                  var senateChart = new RaceView({
+                    el: '.dashboard-congress-senate',
+                    model: senate
+                  }).render();
+                  
+                  this.collection.each(function(r) {
+                    r.set('small', true);
+                    r.set('partisan', true);
+                    var houseChart = new RaceView({
+                      el: '.dashboard-congress-house',
+                      model: r
+                    }).render(true);
+                  });
                 }
               }
             };
