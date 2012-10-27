@@ -226,6 +226,20 @@
       }
       
       /**
+       * Search
+       */
+      .elections-search {
+        display: block;
+        width: 100%;
+        font-size: 1.25em;
+        padding: .25 .5em;
+        margin: 0;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+      
+      /**
        * jQuery UI changes
        */
       body .ui-widget {
@@ -260,7 +274,17 @@
         background: none; 
         background-color: #EFEFEF;
         font-weight: bold; 
-        color: #676767;
+        color: #333333;
+      }
+      body .ui-widget-content {
+        border: 1px solid #DDD;
+        background: none;
+        background-color: #FFFFFF;
+        color: #333333;
+      }
+      
+      body .ui-autocomplete-loading {
+        background: transparent url('https://s3.amazonaws.com/data.minnpost/2012-mn-election-results/images/ajax-loader.gif') center right no-repeat;
       }
     </style>
     
