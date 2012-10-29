@@ -145,6 +145,12 @@
       .bs-icon-won {
         background-position: -288px 0;
       }
+      .bs-icon-refresh {
+        background-position: -240px -24px;
+      }
+      .bs-icon-back {
+        background-position: -240px -96px;
+      }
       
       /**
        * Dashboard
@@ -322,8 +328,8 @@
       <% } else { %>
         <% if (typeof races == 'undefined') { %>
           <% if (typeof small == 'undefined' || small == false) { %>
-            <a href="#dashboard" class="dashboard-link">dashboard</a>
-            <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
+            <a href="#dashboard" class="dashboard-link"><i class="bs-icon bs-icon-back"></i> dashboard</a>
+            <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refresh</a>
           <% } %>
           
           <h3>
@@ -386,8 +392,8 @@
     </script>
     
     <script id="template-races-view" type="text/template">
-      <a href="#dashboard" class="dashboard-link">dashboard</a>
-      <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
+      <a href="#dashboard" class="dashboard-link"><i class="bs-icon bs-icon-back"></i> dashboard</a>
+      <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refesh</a>
       
       <h3><%= title %></h3>
       <% if (typeof racesRendered !== 'undefined' && !_.isEmpty(races)) { %>
@@ -421,7 +427,7 @@
               of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting;
             tracking <strong><%= _.formatNumber(races.value_blob) %></strong> races.
           <% } %>
-          <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
+          <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refesh</a>
         </p>
       </div>
     </script>
@@ -1206,8 +1212,13 @@
             var h = $(this.el).height();
             var d = (w >= h) ? h : w;
             // (cx, cy, r, rin, rout, values, colors, divider, stroke)
-            var chart = Raphael($(this.el).attr('id'), w, h)
-              .donutChart(w / 2, h - 1, h, w * .2, w * .95, values, colors, 2);
+            var paper = Raphael($(this.el).attr('id'), w, h);
+            var chart = paper.donutChart(w / 2, h - 1, h - 1, w * .2, w * .95, values, colors, 2);
+            var path = 'M' + (w / 2).toString() + ',0 L' + (w / 2).toString() + ',' + (h * .2).toString();
+            var middle = paper.path(path).attr({
+              'stroke-width': 3,
+              'stroke': '#676767'
+            });
             
             // Add tooltips
             _.each(chart, function(n, i) {
@@ -1398,14 +1409,17 @@
           },
           
           showRace: function(raceID) {
-            if (raceID !== this.race.get('race_id')) {
-              this.race.set('race_id', raceID);
-              this.raceView.loading();
-              this.race.fetch();
-            }
-            else {
-              this.raceView.render();
-            }
+            var thisView = this;
+            
+            // As the race may not change, we still
+            // want to trigger a change
+            this.race.set('race_id', raceID);
+            this.raceView.loading();
+            this.race.fetch({
+              success: function(e) {
+                thisView.race.trigger('change');
+              }
+            });
           },
           
           showRaceGroup: function(races) {
