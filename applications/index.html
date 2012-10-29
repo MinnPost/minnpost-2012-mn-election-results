@@ -178,10 +178,21 @@
       }
       .barchart-container {
         margin-bottom: 1em;
+        position: relative;
       }
-      .barchart-container div {
+      .barchart-container .barchart-cand {
         height: 2em;
         float: left;
+      }
+      .barchart-middle-marker {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        height: 1em;
+        width: 3px;
+        margin-left: -1px;
+        background-color: #676767;
+        z-index: 999;
       }
       
       .donut-chart-container {
@@ -549,8 +560,11 @@
     
     <script id="template-barchart-view" type="text/template">
       <div class="barchart-container clear-block">
+        <% if (typeof middleMarker != 'undefined' && middleMarker === true) { %>
+          <div class="barchart-middle-marker"></div>
+        <% } %>
         <% for (var i in c) { %>
-          <div class="race-<%= c[i].race_id %> cand-<%= c[i].candidate_id %>"
+          <div class="barchart-cand race-<%= c[i].race_id %> cand-<%= c[i].candidate_id %>"
             style="width: <%= c[i].width * 100 %>%; background-color: <%= c[i].color %>;"></div>
         <% } %>
       </div>
@@ -937,7 +951,8 @@
                   }).render();
                   var chart = new RaceBarChart({
                     el: '.' + this.className + '-chart',
-                    model: race
+                    model: race,
+                    middleMarker: true,
                   }).render();
                 }
               },
@@ -1157,7 +1172,7 @@
               percentage: (up * 100).toFixed(2),
               votes_candidate: 0
             });
-            $(this.el).html(_.template(this.template, { c: cands, pp: pp }));
+            $(this.el).html(_.template(this.template, { c: cands, pp: pp, middleMarker: this.options.middleMarker }));
             
             // Add tooltips
             _.each(cands, function(c) {
