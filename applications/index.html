@@ -753,7 +753,6 @@
               query.push("ORDER BY r.office_name, r.percentage ");
               query.push("LIMIT " + this.options.limit + " ");
             }
-            console.log(query.join(''));
             return baseAPIURL + encodeURI(query.join(''));
           },
           
