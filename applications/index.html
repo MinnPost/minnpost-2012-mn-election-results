@@ -382,10 +382,12 @@
       <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
       
       <h3><%= title %></h3>
-      <p class="race-status">Last updated at <%= updated_moment.format('MMM Do h:mm A') %>.</p>
+      <% if (typeof racesRendered !== 'undefined' && !_.isEmpty(races)) { %>
+        <p class="race-status">Last updated at <%= updated_moment.format('MMM Do h:mm A') %>.</p>
+      <% } %>
       
       <div class="races-races-list">
-        <% if (typeof racesRendered == 'undefined' || races === '') { %>
+        <% if (typeof racesRendered == 'undefined' || _.isEmpty(races)) { %>
           <p>No races or contests found.</p>
         <% } else { %>
           <%= racesRendered %>
@@ -719,6 +721,7 @@
           },
           url: function() {
             var query = [];
+            this.options.search = decodeURI(this.options.search.replace(/\+/g, ' '));
             this.options.limit = this.options.limit || 100;
             
             // Put together query
@@ -757,11 +760,13 @@
             data.title = this.options.search;
             
             // Get first race to get some aggregate values
-            data.updated = this.at(0).get('updated');
-            data.updated_moment = this.at(0).get('updated_moment');
-            data.precincts_percentage = this.at(0).get('precincts_percentage');
-            data.precincts_reporting = this.at(0).get('precincts_reporting');
-            data.total_effected_precincts = this.at(0).get('total_effected_precincts');
+            if (this.length > 0) {
+              data.updated = this.at(0).get('updated');
+              data.updated_moment = this.at(0).get('updated_moment');
+              data.precincts_percentage = this.at(0).get('precincts_percentage');
+              data.precincts_reporting = this.at(0).get('precincts_reporting');
+              data.total_effected_precincts = this.at(0).get('total_effected_precincts');
+            }
             
             return data;
           }
@@ -793,6 +798,17 @@
         
         // View for a multiple races
         var RacesView = Backbone.View.extend({
+          specialTitles: {
+            'races/special/state-leg': 'State Legislature',
+            'races/special/us-congress': 'US Congress',
+            'races/special/judicial': 'Judicial races',
+            'races/special/questions': 'Ballot questions',
+            'races/office_name/amendment': 'Consitutional Amendments',
+            'races/office_name/County+Comissioner': 'County Commissioner races',
+            'races/office_name/Soil+and+Water+Supervisor': 'Soil and Water Supervisor races',
+            'races/office_name/Hospital+District': 'Hospital District races'
+          },
+          
           initialize: function() {
             this.template = $('#template-races-view').html();
             this.raceTemplate = $('#template-race-view').html();
@@ -802,6 +818,7 @@
           render: function() {
             var data = this.collection.exportData();
             data.racesRendered = [];
+            data.title = this.getTitle();
             
             // Render each race
             this.collection.each(function(r) {
@@ -813,6 +830,15 @@
             
             $(this.el).html(_.template(this.template, data));
             return this;
+          },
+          
+          getTitle: function() {
+            // Look for special title first
+            var hash = w.location.hash.replace('#', '');
+            if (hash !== '' && !_.isUndefined(this.specialTitles[hash])) {
+              return this.specialTitles[hash];
+            }
+            return 'Search: ' + this.collection.options.search;
           },
           
           loading: function() {
@@ -988,7 +1014,7 @@
               minLength: 3,
               source: function(request, response) {
                 var type = $('input:radio[name=search-type]:checked').val();
-                var terms = ($('.elections-search').val()).replace(' ', '%');
+                var terms = ($('.elections-search').val()).replace(/ /g, '%');
                 var url = encodeURI(((type == 'office_name') ? thisView.searchAutoOfficeURL : thisView.searchAutoCandURL)
                   .replace('%search%', terms));
                 $.jsonp({
