@@ -160,9 +160,16 @@
         margin-bottom: 2em;
       }
       .dashboard-item {
-        margin-bottom: 1em;
+        margin-bottom: 2em;
         width: 50%;
         float: left;
+      }
+      .dashboard-item h4 {
+        border-bottom: 2px solid #494949;
+        margin-bottom: .5em;
+      }
+      .dashboard-item h5 {
+        margin-bottom: .5em;
       }
       .dashboard-amendments-amendment {
         width: 100%;
@@ -221,6 +228,10 @@
         font-size: 1.5em;
       }
       
+      .dashboard-state-leg {
+        margin-bottom: 1.5em;
+      }
+      
       .dashboard-congress-senate h3,
       .dashboard-congress-senate .race-status,
       .dashboard-congress-house .race-status,
@@ -237,7 +248,7 @@
       }
       
       .dashboard-congress-house h3 {
-        font-size: .75em;
+        font-size: .85em;
       }
       
       /**
@@ -459,6 +470,7 @@
       <div class="dashboard-search-container">
         <div class="inner-container">
           <h4>Search</h4>
+          <p class="race-status">Start typing a few characters and get suggestions.</p>
           <form class="elections-search-form clear-block">
             <div class="election-form-radios form-radios">
               <span>Search by</span>
