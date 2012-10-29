@@ -384,6 +384,9 @@
       <h3><%= title %></h3>
       <% if (typeof racesRendered !== 'undefined' && !_.isEmpty(races)) { %>
         <p class="race-status">Last updated at <%= updated_moment.format('MMM Do h:mm A') %>.</p>
+        <% if (typeof tooMany !== 'undefined' && tooMany === true) { %>
+          <p>Showing many results.  Try narrowing your search to find specifc race(s).</p>
+        <% } %>
       <% } %>
       
       <div class="races-races-list">
@@ -403,10 +406,7 @@
       <h4>Other races</h4>
       <ul>
         <li><a href="#races/special/judicial">Judicial races</a></li>
-        <li><a href="#races/office_name/County+Comissioner">County Commissioner races</a></li>
-        <li><a href="#races/office_name/Soil+and+Water+Supervisor">Soil and Water Supervisor races</a></li>
         <li><a href="#races/special/questions">Ballot questions</a></li>
-        <li><a href="#races/office_name/Hospital+District">Hospital District races</a></li>
       </ul>
       
       <h4>Search</h4>
@@ -723,11 +723,13 @@
             var query = [];
             this.options.search = decodeURI(this.options.search.replace(/\+/g, ' '));
             this.options.limit = this.options.limit || 100;
-            
+
             // Put together query
             if (this.options.field === 'special' && 
               _.isArray(this.specialQueries[this.options.search])) {
               query = this.specialQueries[this.options.search];
+              // Push limit up so we don't mark as too many
+              this.options.limit = 1000;
             }
             else {
               query.push("SELECT * FROM results_general WHERE ");
@@ -754,13 +756,20 @@
           
           exportData: function() {
             var data = {};
+            var cCount = 0;
             data.races = this.toJSON();
+            data.title = this.options.search;            
 
-            // Determine title
-            data.title = this.options.search;
-            
-            // Get first race to get some aggregate values
             if (this.length > 0) {
+              // Flag if too many candidates
+              _.each(this.models, function(m) {
+                cCount += m.get('candidates').length;
+              });
+              if (cCount >= this.options.limit) {
+                data.tooMany = true;
+              }
+              
+              // Get first race to get some aggregate values
               data.updated = this.at(0).get('updated');
               data.updated_moment = this.at(0).get('updated_moment');
               data.precincts_percentage = this.at(0).get('precincts_percentage');
@@ -804,7 +813,7 @@
             'races/special/judicial': 'Judicial races',
             'races/special/questions': 'Ballot questions',
             'races/office_name/amendment': 'Consitutional Amendments',
-            'races/office_name/County+Comissioner': 'County Commissioner races',
+            'races/office_name/County+Commissioner': 'County Commissioner races',
             'races/office_name/Soil+and+Water+Supervisor': 'Soil and Water Supervisor races',
             'races/office_name/Hospital+District': 'Hospital District races'
           },
