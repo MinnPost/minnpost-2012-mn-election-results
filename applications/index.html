@@ -1002,6 +1002,15 @@
                 });
               }
             });
+            $('.elections-search-form').submit(function(e) {
+              e.preventDefault();
+              var type = $('input:radio[name=search-type]:checked').val();
+              var search = $('.elections-search').val();
+              if (search !== '' && !_.isUndefined(thisView.options.router)) {
+                thisView.options.router.navigate(
+                  '/races/' + type + '/' + encodeURI(search), { trigger: true });
+              }
+            });
           },
           
           loading: function(el) {
@@ -1271,7 +1280,8 @@
               el: '#render-container'
             });
             this.dashboardView = new DashboardView({
-              el: '#render-container'
+              el: '#render-container',
+              router: this
             });
             
             // Handle refesh links
