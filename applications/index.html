@@ -153,11 +153,10 @@
         text-align: center;
         margin-bottom: 2em;
       }
-      .dashboard-president-container,
-      .dashboard-amendments-container {
+      .dashboard-item {
+        margin-bottom: 1em;
         width: 50%;
         float: left;
-        margin-bottom: 1em;
       }
       .dashboard-amendments-amendment {
         width: 100%;
@@ -169,8 +168,7 @@
       }
       
       .state-leg-chart-container {
-        width: 50%;
-        float: left;
+        width: 100%;
       }
       .barchart-container {
         margin-bottom: 1em;
@@ -202,7 +200,7 @@
       }
       .block-chart-count {
         text-align: center;
-        margin-top: .5em;
+        margin: .5em 0 1em 0;
         font-size: 1.5em;
       }
       
@@ -237,6 +235,16 @@
         -moz-box-sizing: border-box;
         -webkit-box-sizing: border-box;
         box-sizing: border-box;
+      }
+      .election-search-submit {
+        float: right;
+        margin-top: .25em;
+      }
+      .election-form-radios {
+        text-align: center;
+      }
+      .election-form-radios input {
+        margin-left: .5em;
       }
       
       /**
@@ -400,27 +408,7 @@
     
     <script id="template-dashboard-view" type="text/template">
       <div class="dashboard-header"></div>
-      
-      <div class="dashboard-summaries"></div>
-      
-      <h4>Other races</h4>
-      <ul>
-        <li><a href="#races/special/judicial">Judicial races</a></li>
-        <li><a href="#races/special/questions">Ballot questions</a></li>
-      </ul>
-      
-      <h4>Search</h4>
-      <form class="elections-search-form">
-        <div class="form-radios">
-          <span>Search by</span>
-          <input type="radio" name="search-type" value="office_name" class="form-radio" id="search-type-office" checked="checked" />
-          <label for="search-type-office">Contest</label>
-          <input type="radio" name="search-type" value="candidate" class="form-radio" id="search-type-candidate" />
-          <label for="search-type-candidate">Candidate</label>
-        </div>
-        <input type="text" class="form-text elections-search" />
-        <input type="submit" value="search" />
-      </form>
+      <div class="dashboard-summaries clear-block"></div>
     </script>
     
     <script id="template-dashboard-header" type="text/template">
@@ -435,6 +423,37 @@
           <% } %>
           <a href="<%= window.location.hash %>" class="refresh-link">refesh</a>
         </p>
+      </div>
+    </script>
+    
+    <script id="template-dashboard-other-races" type="text/template">
+      <div class="dashboard-other-races-container">
+        <div class="inner-container">
+          <h4>Other races</h4>
+          <ul>
+            <li><a href="#races/special/judicial">Judicial races</a></li>
+            <li><a href="#races/special/questions">Ballot questions</a></li>
+          </ul>
+        </div>
+      </div>
+    </script>
+    
+    <script id="template-dashboard-search" type="text/template">
+      <div class="dashboard-search-container">
+        <div class="inner-container">
+          <h4>Search</h4>
+          <form class="elections-search-form clear-block">
+            <div class="election-form-radios form-radios">
+              <span>Search by</span>
+              <input type="radio" name="search-type" value="office_name" class="form-radio" id="search-type-office" checked="checked" />
+              <label for="search-type-office">Contest</label>
+              <input type="radio" name="search-type" value="candidate" class="form-radio" id="search-type-candidate" />
+              <label for="search-type-candidate">Candidate</label>
+            </div>
+            <input type="text" class="form-text elections-search" />
+            <input type="submit" class="form-submit election-search-submit" value="search" />
+          </form>
+        </div>
       </div>
     </script>
     
@@ -490,32 +509,36 @@
     </script>
     
     <script id="template-dashboard-state-leg" type="text/template">
-      <h4>State legislature <a class="race-permalink"  title="Permanent link to the State Legislature races" href="#races/special/state-leg">permalink</a></h4>
-      
-      <div class="clear-block">
-        <div class="state-leg-chart-container">
-          <div class="inner-container">
-            <h5>State Senate</h5>
-            <div class="state-leg-senate-chart"></div>
-          </div>
-        </div>
-        
-        <div class="state-leg-chart-container">
-          <div class="inner-container">
-            <h5>State House</h5>
-            <div class="state-leg-house-chart"></div>
+      <div class="dashboard-state-leg-container">
+        <div class="inner-container">
+          <h4>State legislature <a class="race-permalink"  title="Permanent link to the State Legislature races" href="#races/special/state-leg">permalink</a></h4>
+          
+          <div class="clear-block">
+            <div class="state-leg-chart-container">
+              <h5>State Senate</h5>
+              <div class="state-leg-senate-chart"></div>
+            </div>
+            
+            <div class="state-leg-chart-container">
+              <h5>State House</h5>
+              <div class="state-leg-house-chart"></div>
+            </div>
           </div>
         </div>
       </div>
     </script>
     
     <script id="template-dashboard-congress" type="text/template">
-      <h4>Congress <a class="race-permalink"  title="Permanent link to the US Congress races" href="#races/special/us-congress">permalink</a></h4>
-      <h5>US Senate</h5>
-      <div class="dashboard-congress-senate"></div>
-      
-      <h5>US House</h5>
-      <div class="dashboard-congress-house"></div>
+      <div class="dashboard-state-leg-container">
+        <div class="inner-container">
+          <h4>Congress <a class="race-permalink"  title="Permanent link to the US Congress races" href="#races/special/us-congress">permalink</a></h4>
+          <h5>US Senate</h5>
+          <div class="dashboard-congress-senate"></div>
+          
+          <h5>US House</h5>
+          <div class="dashboard-congress-house"></div>
+        </div>
+      </div>
     </script>
     
     <script id="template-barchart-view" type="text/template">
@@ -574,6 +597,7 @@
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/raphael-2.1.0/raphael-min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/qtip2-master-20121022/jquerycustom.qtip.min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/jquery.ui-autocomplete-1.9.1/jquerycustom.ui-autocomplete-1.9.1.min.js"></script>
+    <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/masonry-v2.1.05/jquerycustom.masonry.min.js"></script>
     
     <script type="text/javascript">
       // Add some helpful funcitons to Backboe, because that makes
@@ -991,6 +1015,18 @@
                     }).render(true);
                   });
                 }
+              },
+              other: {
+                className: 'dashboard-other-races',
+                render: function() {
+                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                }
+              },
+              search: {
+                className: 'dashboard-search',
+                render: function() {
+                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                }
               }
             };
           },
@@ -1016,17 +1052,29 @@
               }
             });
             
+            // Some masonry goodness
+            $('.dashboard-summaries').masonry({
+              itemSelector: '.dashboard-item'
+            });
+            
             // Add sumary containers and start rendering
             this.$summaries = this.$el.find('.dashboard-summaries');
             _.each(this.summaries, function(summary, s) {
-              $('<div>').addClass(summary.className).appendTo(this.$summaries);
+              $('<div>').addClass(summary.className).addClass('dashboard-item').appendTo(this.$summaries);
               
-              this.loading('.' + summary.className);
-              summary.collection.fetch({
-                success: function(collection, response) {
-                  summary.render();
-                }
-              });
+              if (_.isObject(summary.collection)) {
+                this.loading('.' + summary.className);
+                summary.collection.fetch({
+                  success: function(collection, response) {
+                    summary.render();
+                    $('.dashboard-summaries').masonry('reload');
+                  }
+                });
+              }
+              else {
+                summary.render();
+                $('.dashboard-summaries').masonry('reload');
+              }
             }, this);
             
             // Search and autocomplete
