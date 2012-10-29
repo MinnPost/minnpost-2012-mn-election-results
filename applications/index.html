@@ -709,7 +709,7 @@
         
         // Collection for races
         var Races = Backbone.Collection.extend({
-          safeFields: [ 'question_body', 'office_name', 'candidate', 'special' ],
+          safeFields: [ 'question_body', 'office_name', 'candidate', 'race_id', 'special' ],
           
           specialQueries: {
             'state-leg': ["SELECT * FROM results_general WHERE office_name LIKE '%state senator%' " +
