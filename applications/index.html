@@ -115,7 +115,7 @@
       }
       .refresh-link,
       .dashboard-link {
-        background-color: #EBEBEB;
+        background-color: #BCBCBC;
         padding: .25em .5em;
         margin-right: .25em;
         -moz-border-radius: 3px;
@@ -125,6 +125,11 @@
       
       .race-status {
         color: #ABABAB;
+      }
+      
+      .race-header {
+        margin: 1.5em 0 1.5em 0;
+        position: relative;
       }
       
       .bs-icon {
@@ -140,13 +145,13 @@
         *display:inline;
       }
       .bs-icon-won {
-        background-position: -288px 0;
+        background-position: -288px -1;
       }
       .bs-icon-refresh {
-        background-position: -240px -24px;
+        background-position: -240px -23px;
       }
       .bs-icon-back {
-        background-position: -240px -96px;
+        background-position: -240px -95px;
       }
       
       /**
@@ -204,7 +209,7 @@
         position: absolute;
         left: 50%;
         top: 0;
-        height: 1em;
+        height: .5em;
         width: 3px;
         margin-left: -1px;
         background-color: #676767;
@@ -399,8 +404,10 @@
       <% } else { %>
         <% if (typeof races == 'undefined') { %>
           <% if (typeof small == 'undefined' || small == false) { %>
-            <a href="#dashboard" class="dashboard-link"><i class="bs-icon bs-icon-back"></i> dashboard</a>
-            <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refresh</a>
+            <div class="race-header">
+              <a href="#dashboard" class="dashboard-link"><i class="bs-icon bs-icon-back"></i> dashboard</a>
+              <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refresh</a>
+            </div>
           <% } %>
           
           <h3>
@@ -419,12 +426,12 @@
         
         <p class="race-status">
         <% if (typeof races == 'undefined') { %>
-          Last updated at <strong><%= updated_moment.format('MMM Do h:mm A') %></strong> with
-          <strong><%= (precincts_percentage * 100).toFixed(2) %>%</strong> 
+          Last updated at <%= updated_moment.format('MMM Do h:mm A') %> with
+          <%= (precincts_percentage * 100).toFixed(2) %>% 
             (<%= _.formatNumber(precincts_reporting) %> 
             of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
         <% } else { %>
-          <strong><%= (precincts_percentage * 100).toFixed(2) %>%</strong> 
+          <%= (precincts_percentage * 100).toFixed(2) %>% 
             (<%= _.formatNumber(precincts_reporting) %> 
             of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
         <% } %>
@@ -463,8 +470,10 @@
     </script>
     
     <script id="template-races-view" type="text/template">
-      <a href="#dashboard" class="dashboard-link"><i class="bs-icon bs-icon-back"></i> dashboard</a>
-      <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refesh</a>
+      <div class="race-header">
+        <a href="#dashboard" class="dashboard-link"><i class="bs-icon bs-icon-back"></i> dashboard</a>
+        <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refresh</a>
+      </div>
       
       <h3><%= title %></h3>
       <% if (typeof racesRendered !== 'undefined' && !_.isEmpty(races)) { %>
