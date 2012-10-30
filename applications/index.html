@@ -1475,6 +1475,12 @@
               //thisRouter.navigate('/' + path, { trigger: true });
               Backbone.history.loadUrl(Backbone.history.fragment);
             });
+            
+            // Auto refresh on for all route changes.  This
+            // will reset the refresh count
+            this.on('all', function(e) {
+              this.autoRefreshOn();
+            });
           },
         
           defaultRoute: function() {
@@ -1507,6 +1513,21 @@
             this.races.options.search = races.shift();
             this.racesView.loading();
             this.races.fetch();
+          },
+          
+          autoRefresh: function() {
+            $('.refresh-link').click();
+          },
+          
+          autoRefreshOn: function() {
+            this.autoRefreshOff();
+            this.autoRefreshID = w.setInterval(this.autoRefresh, 45000);
+          },
+          
+          autoRefreshOff: function() {
+            if (_.isNumber(this.autoRefreshID)) {
+              w.clearInterval(this.autoRefreshID)
+            }
           }
         });
           
