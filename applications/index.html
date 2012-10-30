@@ -303,6 +303,31 @@
       }
       
       /**
+       * Dashboard items in race views
+       */
+      .races-dashboard-part .dashboard-amendments-container {
+        margin-bottom: 2em;
+      }
+      .races-dashboard-part .dashboard-amendments-container .dashboard-amendments-amendment {
+        width: 50%;
+        float: left;
+      }
+      .races-dashboard-part .dashboard-amendments-container .dashboard-amendments-amendment h5 {
+        text-align: center;
+        margin-bottom: 1em;
+      }
+      .races-dashboard-part .dashboard-amendments-container .dashboard-amendments-amendment .amendment-canvas-block {
+        width: 100%;
+        float: none;
+      }
+      .races-dashboard-part .state-leg-chart-container {
+        width: 50%;
+        float: left;
+      }
+      .races-dashboard-part .state-leg-senate-chart {
+        margin-right: 1em;
+      }
+      /**
        * Search
        */
       .elections-search-form {
@@ -485,6 +510,7 @@
           <p>Showing many results.  Try narrowing your search to find specifc race(s).</p>
         <% } %>
       <% } %>
+      <div class="races-dashboard-part"></div>
       
       <div class="races-races-list">
         <% if (typeof racesRendered == 'undefined' || _.isEmpty(races)) { %>
@@ -559,8 +585,10 @@
     <script id="template-dashboard-president" type="text/template">
       <div class="dashboard-president-container">
         <div class="dashboard-inner-container">
-          <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">More details</a></h4>
-          <p class="race-status">Minnesota results only.</p>
+          <% if (showTitle) { %>
+            <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">More details</a></h4>
+            <p class="race-status">Minnesota results only.</p>
+          <% } %>
           
           <div class="dashboard-president-table"></div>
           <div class="dashboard-president-chart"></div>
@@ -569,9 +597,11 @@
     </script>
     
     <script id="template-dashboard-amendments" type="text/template">
-      <div class="dashboard-amendments-container ">
+      <div class="dashboard-amendments-container">
         <div class="dashboard-inner-container clear-block">
-          <h4>Amendments <a class="race-permalink"  title="Permanent link to the Amendment races" href="#races/office_name/amendment">More details</a></h4>
+          <% if (showTitle) { %>
+            <h4>Amendments <a class="race-permalink"  title="Permanent link to the Amendment races" href="#races/office_name/amendment">More details</a></h4>
+          <% } %>
           
           <div class="dashboard-amendments-amendment clear-block">
             <h5>Marriage Amendment</h5>
@@ -600,7 +630,9 @@
     <script id="template-dashboard-state-leg" type="text/template">
       <div class="dashboard-state-leg-container">
         <div class="dashboard-inner-container">
-          <h4>State legislature <a class="race-permalink"  title="Permanent link to the State Legislature races" href="#races/special/state-leg">More details</a></h4>
+          <% if (showTitle) { %>
+            <h4>State legislature <a class="race-permalink"  title="Permanent link to the State Legislature races" href="#races/special/state-leg">More details</a></h4>
+          <% } %>
           
           <div class="clear-block">
             <div class="state-leg-chart-container">
@@ -945,6 +977,11 @@
             'races/office_name/Hospital+District': 'Hospital District races'
           },
           
+          dashboardParts: {
+            'races/special/state-leg': 'stateLeg',
+            'races/office_name/amendment': 'amendments'
+          },
+          
           initialize: function() {
             this.template = $('#template-races-view').html();
             this.raceTemplate = $('#template-race-view').html();
@@ -965,7 +1002,23 @@
             data.racesRendered = data.racesRendered.join(' ');
             
             $(this.el).html(_.template(this.template, data));
+            this.renderDashboard();
             return this;
+          },
+          
+          renderDashboard: function() {
+            // Render a dashboard part if needed
+            var hash = w.location.hash.replace('#', '');
+            if (hash !== '' && !_.isUndefined(this.dashboardParts[hash])) {
+              var part = this.dashboardParts[hash];
+              this.dashboardView = this.dashboardView || new DashboardView();
+              if (_.isObject(this.dashboardView.summaries[part])) {
+                var renderer = this.dashboardView.summaries[part];
+                renderer.collection = this.collection;
+                renderer.className = 'races-dashboard-part';
+                renderer.render(false, true);
+              }
+            }
           },
           
           getTitle: function() {
@@ -1005,9 +1058,11 @@
                   search: 'id----0101'
                 }),
                 className: 'dashboard-president',
-                render: function() {
+                render: function(showTitle) {
+                  showTitle = (_.isBoolean(showTitle)) ? showTitle : true;
                   var race = this.collection.at(0);
                   var data = race.toJSON();
+                  data.showTitle = showTitle;
                   
                   // Render template and chart
                   $('.' + this.className).html(
@@ -1033,30 +1088,36 @@
                   search: 'amendment'
                 }),
                 className: 'dashboard-amendments',
-                render: function() {
+                render: function(showTitle, donutOnly) {
+                  showTitle = (_.isBoolean(showTitle)) ? showTitle : true;
+                  donutOnly = donutOnly || false;
+                  
                   var amend1 = this.collection.at(0);
                   var amend2 = this.collection.at(1);
-                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                  $('.' + this.className).html(_.template($('#template-dashboard-amendments').html(),
+                    { showTitle: showTitle }));
                   
                   // Create donut and table chart
                   amend1.set('small', true);
                   amend2.set('small', true);
-                  var tableChart1 = new RaceView({
-                    el: '.amendment-1-table-block',
-                    model: amend1
-                  }).render();
                   var chart1 = new RaceDonutChart({
                     el: '#amendment-1-canvas',
                     model: amend1
-                  }).render();
-                  var tableChart2 = new RaceView({
-                    el: '.amendment-2-table-block',
-                    model: amend2
                   }).render();
                   var chart2 = new RaceDonutChart({
                     el: '#amendment-2-canvas',
                     model: amend2
                   }).render();
+                  if (!donutOnly) {
+                    var tableChart1 = new RaceView({
+                      el: '.amendment-1-table-block',
+                      model: amend1
+                    }).render();
+                    var tableChart2 = new RaceView({
+                      el: '.amendment-2-table-block',
+                      model: amend2
+                    }).render();
+                  }
                 }
               },
               stateLeg: {
@@ -1064,8 +1125,10 @@
                   field: 'special', search: 'state-leg'
                 }),
                 className: 'dashboard-state-leg',
-                render: function() {
-                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                render: function(showTitle) {
+                  showTitle = (_.isBoolean(showTitle)) ? showTitle : true;
+                  $('.' + this.className).html(_.template($('#template-dashboard-state-leg').html(),
+                    { showTitle: showTitle }));
 
                   var senateView = new BlockChart({
                     el: '.state-leg-senate-chart',
@@ -1088,7 +1151,7 @@
                 }),
                 className: 'dashboard-congress',
                 render: function() {
-                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                  $('.' + this.className).html(_.template($('#template-dashboard-congress').html(), {}));
                   
                   var senate = this.collection.pop();
                   senate.set('small', true);
@@ -1111,13 +1174,13 @@
               other: {
                 className: 'dashboard-other-races',
                 render: function() {
-                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                  $('.' + this.className).html(_.template($('#template-dashboard-other-races').html(), {}));
                 }
               },
               search: {
                 className: 'dashboard-search',
                 render: function() {
-                  $('.' + this.className).html(_.template($('#template-' + this.className).html(), {}));
+                  $('.' + this.className).html(_.template($('#template-dashboard-search').html(), {}));
                 }
               }
             };
@@ -1292,7 +1355,7 @@
             var d = (w >= h) ? h : w;
             // (cx, cy, r, rin, rout, values, colors, divider, stroke)
             var paper = Raphael($(this.el).attr('id'), w, h);
-            var chart = paper.donutChart(w / 2, h - 1, h - 1, w * .2, w * .95, values, colors, 2);
+            var chart = paper.donutChart(w / 2, h - 1, h - 1, d * .45, d * .95, values, colors, 2);
             var path = 'M' + (w / 2).toString() + ',0 L' + (w / 2).toString() + ',' + (h * .2).toString();
             var middle = paper.path(path).attr({
               'stroke-width': 3,
