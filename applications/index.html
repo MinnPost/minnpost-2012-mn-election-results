@@ -327,10 +327,11 @@
       .races-dashboard-part .state-leg-senate-chart {
         margin-right: 1em;
       }
-      .race-dashboard-part .barchart-container .barchart-cand {
+      
+      .race-barchart .barchart-container .barchart-cand {
         height: 3em;
       }
-      .race-dashboard-part .barchart-middle-marker {
+      .race-barchart .barchart-middle-marker {
         height: 1em;
       }
       
@@ -472,7 +473,9 @@
         <% } %>
         </p>
         
-        <div class="race-dashboard-part"></div>
+        <% if (typeof small == 'undefined' || small == false) { %>
+          <div class="race-barchart"></div>
+        <% } %>
       
         <table>
           <% if (typeof small == 'undefined' || small == false) { %>
@@ -951,13 +954,10 @@
         
         // View for a single race
         var RaceView = Backbone.View.extend({
-          dashboardParts: {
-            'race/id----0101': 'president'
-          },
-          
           initialize: function() {
             this.template = $('#template-race-view').html();
             this.loadingTemplate = $('#template-loading').html();
+            this.raceBarChart = new RaceBarChart({ middleMarker: true });
           }, 
           
           render: function(append) {
@@ -967,24 +967,11 @@
             }
             else {
               $(this.el).html(_.template(this.template, this.model.toJSON()));
+              this.raceBarChart.el = '.race-barchart';
+              this.raceBarChart.model = this.model;
+              this.raceBarChart.render();
             }
-            this.renderDashboard();
             return this;
-          },
-          
-          renderDashboard: function() {
-            // Render a dashboard part if needed
-            var hash = w.location.hash.replace('#', '');
-            if (hash !== '' && !_.isUndefined(this.dashboardParts[hash])) {
-              var part = this.dashboardParts[hash];
-              this.dashboardView = this.dashboardView || new DashboardView();
-              if (_.isObject(this.dashboardView.summaries[part])) {
-                var renderer = this.dashboardView.summaries[part];
-                renderer.collection.push(this.model);
-                renderer.className = 'race-dashboard-part';
-                renderer.render(true);
-              }
-            }
           },
           
           loading: function() {
