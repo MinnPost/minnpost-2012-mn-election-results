@@ -1305,7 +1305,7 @@
               c.width = pp * c.percentage / 100;
               c.offsetX = offsetX;
               offsetX += c.width;
-              c.color = this.partyView.getColor(c.party_id, c.candidate);
+              c.color = this.partyView.getColor(c.party_id, c.candidate, true);
               return c;
             }, this);
             // Add a point of data that represents the precints
@@ -1481,7 +1481,7 @@
             'IND': { colors: [ '#FF7E38' ], title: 'Independent' },
             'SL': { colors: [ '#EA75FF' ], title: 'Socialism and Liberation' },
             'JP': { colors: [ '#FAD400' ], title: 'Justice Party' },
-            'NP': { colors: [ '#DCDCDC' ], title: 'Nonpartisan' },
+            'NP': { colors: [ '#CFCFCF', '#C2C2C2', '#B5B5B5', '#A8A8A8' ], title: 'Nonpartisan' },
             'WI': { colors: [ '#999999' ], title: 'Write-In' },
             'NONE': { colors: [ '#E1E1E1' ], title: 'No party assigned' },
             'YES': { colors: [ '#1AAD00' ], title: 'Yes' },
@@ -1494,12 +1494,23 @@
             this.template = $('#template-party-value').html();
           },
           
-          getColor: function(party, title) {
+          getColor: function(party, title, increment) {
             // A hackish way to color based on titles for questions
             party = (_.contains(['YES', 'NO', 'ESTIMATED BLANKS'], title)) ? title : party;
-            return (!_.isUndefined(this.partyColors[party]) && 
-              this.partyColors[party].colors[0] !== '') ?
-              this.partyColors[party].colors[0] : this.partyColors.NONE.colors[0];
+            // For races that are non-partisan, we want to use multiple colors
+            if (increment && !_.isUndefined(this.partyColors[party])) {
+              this.partyColors[party].increment = this.partyColors[party].increment || 0;
+              this.partyColors[party].increment += 1;
+              if (this.partyColors[party].increment >= this.partyColors[party].colors.length) {
+                this.partyColors[party].increment = 0;
+              }
+              return this.partyColors[party].colors[this.partyColors[party].increment];
+            }
+            else {
+              return (!_.isUndefined(this.partyColors[party]) && 
+                this.partyColors[party].colors[0] !== '') ?
+                this.partyColors[party].colors[0] : this.partyColors.NONE.colors[0];
+            }
           },
           
           getTitle: function(party) {
@@ -1556,7 +1567,7 @@
             
             // Handle refresh links
             $('#render-container').on('click', '.refresh-link', function() {
-              var path = $(this).attr('href').split('#').slice(1)[0];
+              //var path = $(this).attr('href').split('#').slice(1)[0];
               // Backbone router navigate doesnt do anything if
               // the route is the same, so this hackish
               //thisRouter.navigate('/' + path, { trigger: true });
@@ -1564,8 +1575,14 @@
             });
             
             // Auto refresh on for all route changes.  This
-            // will reset the refresh count
+            // will reset the refresh count.
+            // Also, scroll back to top of container
             this.on('all', function(e) {
+              /*
+              $('html, body').animate({
+                scrollTop: $('#render-container').offset().top - 15
+              }, 1000);
+              */
               this.autoRefreshOn();
             });
           },
