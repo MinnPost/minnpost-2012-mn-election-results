@@ -66,6 +66,7 @@
       #minnpost-2012-mn-election-results table {
         width: 100%;
         font-size: .75em;
+        font-family: Helvetica,Arial,Geneva,sans-serif;
       }
       #minnpost-2012-mn-election-results table tr:nth-child(even) {
         background-color: #EBEBEB;
@@ -86,16 +87,10 @@
         width: 10%;
       }
       
-      #minnpost-2012-mn-election-results .inner-container {
-        padding: 0 .5em;
-      }
-      
       #render-container {
         min-height: 15em;
       }
       
-      .loading-general-container {
-      }
       .loading-general {
         width: 100%;
         text-align: center;
@@ -115,8 +110,8 @@
       
       .race-permalink {
         font-size: .5em;
-        background: transparent url('https://s3.amazonaws.com/data.minnpost/projects/2012-mn-election-results/images/link-16x8.png') center left no-repeat;
-        color: transparent;
+        background: transparent url('https://s3.amazonaws.com/data.minnpost/projects/2012-mn-election-results/images/link-16x8.png') center right no-repeat;
+        padding-right: 22px;
       }
       .refresh-link,
       .dashboard-link {
@@ -159,16 +154,28 @@
        */
       .dashboard-header-container {
         text-align: center;
-        margin-bottom: 2em;
+        margin: 1.5em 0 2em 0;
+        color: #801019;
+      }
+      .dashboard-header-container a {
+        margin-left: .5em;
       }
       .dashboard-item {
         margin-bottom: 2em;
         width: 50%;
         float: left;
       }
+      .dashboard-item .dashboard-inner-container {
+        padding-bottom: 1.5em;
+        border-bottom: 1px solid #BCBCBC;
+        margin: 0 1em;
+      }
       .dashboard-item h4 {
-        border-bottom: 2px solid #494949;
         margin-bottom: .5em;
+      }
+      .dashboard-item h4 a {
+        float: right;
+        margin-top: .25em;
       }
       .dashboard-item h5 {
         margin-bottom: .5em;
@@ -190,7 +197,7 @@
         position: relative;
       }
       .barchart-container .barchart-cand {
-        height: 2em;
+        height: 1.5em;
         float: left;
       }
       .barchart-middle-marker {
@@ -230,10 +237,6 @@
         font-size: 1.5em;
       }
       
-      .dashboard-state-leg {
-        margin-bottom: 1.5em;
-      }
-      
       .dashboard-congress-senate h3,
       .dashboard-congress-senate .race-status,
       .dashboard-congress-house .race-status,
@@ -249,6 +252,18 @@
         display: none;
       }
       
+      .dashboard-state-leg {
+        margin-bottom: 1.5em;
+      }
+      .dashboard-congress-container .dashboard-inner-container, 
+      .dashboard-search-container .dashboard-inner-container {
+        border-bottom: none;
+      }
+      .dashboard-president-container h4,
+      .dashboard-search-container h4 {
+        margin-bottom: 0;
+      } 
+      
       .dashboard-congress-house h3 {
         font-size: .85em;
       }
@@ -256,6 +271,9 @@
       /**
        * Search
        */
+      .elections-search-form {
+        font-family: Helvetica,Arial,Geneva,sans-serif;
+      }
       .elections-search {
         display: block;
         width: 100%;
@@ -359,11 +377,11 @@
           <h3>
             <%= race %> 
             <% if (typeof small == 'undefined' || small == false) { %>
-              <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a>
+              <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race"></a>
             <% } %>
           </h3>
         <% } else { %>
-          <h4><%= race %> <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race">permalink</a></h4>
+          <h4><%= race %> <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race"></a></h4>
         <% } %>
         
         <% if (typeof question_body != 'undefined' && question_body != '') { %>
@@ -445,11 +463,10 @@
       <div class="dashboard-header-container">
         <p>
           <% if (typeof updated != 'undefined') { %>
-            Last updated at <strong><%= moment.unix(updated.value_blob).format('MMM Do h:mm A') %></strong> with
-            <strong><%= (precincts_reporting.value_blob * 100 / total_effected_precincts.value_blob).toFixed(2) %>%</strong> 
+            Last updated at <%= moment.unix(updated.value_blob).format('MMM Do h:mm A') %> with
+            <%= (precincts_reporting.value_blob * 100 / total_effected_precincts.value_blob).toFixed(2) %>% 
               (<%= _.formatNumber(precincts_reporting.value_blob) %> 
-              of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting;
-            tracking <strong><%= _.formatNumber(races.value_blob) %></strong> races.
+              of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting.
           <% } %>
           <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refesh</a>
         </p>
@@ -458,7 +475,7 @@
     
     <script id="template-dashboard-other-races" type="text/template">
       <div class="dashboard-other-races-container">
-        <div class="inner-container">
+        <div class="dashboard-inner-container">
           <h4>Other races</h4>
           <ul>
             <li><a href="#races/special/judicial">Judicial races</a></li>
@@ -470,7 +487,7 @@
     
     <script id="template-dashboard-search" type="text/template">
       <div class="dashboard-search-container">
-        <div class="inner-container">
+        <div class="dashboard-inner-container">
           <h4>Search</h4>
           <p class="race-status">Start typing a few characters and get suggestions.</p>
           <form class="elections-search-form clear-block">
@@ -500,8 +517,8 @@
     
     <script id="template-dashboard-president" type="text/template">
       <div class="dashboard-president-container">
-        <div class="inner-container">
-          <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">permalink</a></h4>
+        <div class="dashboard-inner-container">
+          <h4>Presidential <a class="race-permalink"  title="Permanent link to this race" href="#race/<%= race_id %>">More details</a></h4>
           <p class="race-status">Minnesota results only.</p>
           
           <div class="dashboard-president-table"></div>
@@ -511,9 +528,9 @@
     </script>
     
     <script id="template-dashboard-amendments" type="text/template">
-      <div class="dashboard-amendments-container">
-        <div class="inner-container">
-          <h4>Amendments <a class="race-permalink"  title="Permanent link to the Amendment races" href="#races/office_name/amendment">permalink</a></h4>
+      <div class="dashboard-amendments-container ">
+        <div class="dashboard-inner-container clear-block">
+          <h4>Amendments <a class="race-permalink"  title="Permanent link to the Amendment races" href="#races/office_name/amendment">More details</a></h4>
           
           <div class="dashboard-amendments-amendment clear-block">
             <h5>Marriage Amendment</h5>
@@ -541,8 +558,8 @@
     
     <script id="template-dashboard-state-leg" type="text/template">
       <div class="dashboard-state-leg-container">
-        <div class="inner-container">
-          <h4>State legislature <a class="race-permalink"  title="Permanent link to the State Legislature races" href="#races/special/state-leg">permalink</a></h4>
+        <div class="dashboard-inner-container">
+          <h4>State legislature <a class="race-permalink"  title="Permanent link to the State Legislature races" href="#races/special/state-leg">More details</a></h4>
           
           <div class="clear-block">
             <div class="state-leg-chart-container">
@@ -560,9 +577,9 @@
     </script>
     
     <script id="template-dashboard-congress" type="text/template">
-      <div class="dashboard-state-leg-container">
-        <div class="inner-container">
-          <h4>Congress <a class="race-permalink"  title="Permanent link to the US Congress races" href="#races/special/us-congress">permalink</a></h4>
+      <div class="dashboard-congress-container">
+        <div class="dashboard-inner-container">
+          <h4>Congress <a class="race-permalink"  title="Permanent link to the US Congress races" href="#races/special/us-congress">More details</a></h4>
           <h5>US Senate</h5>
           <div class="dashboard-congress-senate"></div>
           
@@ -1284,6 +1301,7 @@
               if (r.get('winning_party') == 'R' && r.get('all_in')) { sort += 'ZZ'; }
               else if (r.get('winning_party') == 'R' && !r.get('all_in')) { sort += 'AA'; }
               else { sort += (r.get('all_in') ? 'AA' : 'ZZ'); }
+              sort += r.get('office_name');
               return sort;
             });
           },
