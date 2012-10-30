@@ -276,6 +276,7 @@
       /* Specific positioning */
       .dashboard-summaries {
         position: relative;
+        min-height: 72em;
       }
       .dashboard-congress {
         position: absolute;
@@ -462,7 +463,7 @@
         
         <p class="race-status">
         <% if (typeof races == 'undefined') { %>
-          Updated on <%= updated_moment.format('MMM Do h:mm A') %> with
+          Updated <%= updated_moment.fromNow() %> with
           <%= (precincts_percentage * 100).toFixed(2) %>% 
             (<%= _.formatNumber(precincts_reporting) %> 
             of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
@@ -517,7 +518,7 @@
       
       <h3><%= title %></h3>
       <% if (typeof racesRendered !== 'undefined' && !_.isEmpty(races)) { %>
-        <p class="race-status">Updated on <%= updated_moment.format('MMM Do h:mm A') %>.</p>
+        <p class="race-status">Updated <%= updated_moment.fromNow() %>.</p>
         <% if (typeof tooMany !== 'undefined' && tooMany === true) { %>
           <p>Showing many results.  Try narrowing your search to find specifc race(s).</p>
         <% } %>
@@ -542,7 +543,7 @@
       <div class="dashboard-header-container">
         <p>
           <% if (typeof updated != 'undefined') { %>
-            Updated on <%= moment.unix(updated.value_blob).format('MMM Do h:mm A') %> with
+            Updated <%= moment.unix(updated.value_blob).fromNow() %> with
             <%= (precincts_reporting.value_blob * 100 / total_effected_precincts.value_blob).toFixed(2) %>% 
               (<%= _.formatNumber(precincts_reporting.value_blob) %> 
               of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting.
@@ -1495,9 +1496,7 @@
           
           getColor: function(party, title) {
             // A hackish way to color based on titles for questions
-            console.log(party, title);
             party = (_.contains(['YES', 'NO', 'ESTIMATED BLANKS'], title)) ? title : party;
-            console.log(party);
             return (!_.isUndefined(this.partyColors[party]) && 
               this.partyColors[party].colors[0] !== '') ?
               this.partyColors[party].colors[0] : this.partyColors.NONE.colors[0];
