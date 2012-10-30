@@ -1304,7 +1304,7 @@
               c.width = pp * c.percentage / 100;
               c.offsetX = offsetX;
               offsetX += c.width;
-              c.color = this.partyView.getColor(c.party_id);
+              c.color = this.partyView.getColor(c.party_id, c.candidate);
               return c;
             }, this);
             // Add a point of data that represents the precints
@@ -1493,7 +1493,9 @@
             this.template = $('#template-party-value').html();
           },
           
-          getColor: function(party) {
+          getColor: function(party, title) {
+            // A hackish way to color based on titles for questions
+            party = (_.contains['YES', 'NO', 'ESTIMATED BLANKS'], title) ? title : party;
             return (!_.isUndefined(this.partyColors[party]) && 
               this.partyColors[party].colors[0] !== '') ?
               this.partyColors[party].colors[0] : this.partyColors.NONE.colors[0];
