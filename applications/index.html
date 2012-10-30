@@ -417,7 +417,10 @@
             <% } %>
           </h3>
         <% } else { %>
-          <h4><%= race %> <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race"></a></h4>
+          <h4>
+            <%= race %>
+            <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race"></a>
+          </h4>
         <% } %>
         
         <% if (typeof question_body != 'undefined' && question_body != '') { %>
@@ -506,7 +509,7 @@
               (<%= _.formatNumber(precincts_reporting.value_blob) %> 
               of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting.
           <% } %>
-          <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refesh</a>
+          <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refresh</a>
         </p>
       </div>
     </script>
@@ -1467,7 +1470,7 @@
               router: this
             });
             
-            // Handle refesh links
+            // Handle refresh links
             $('#render-container').on('click', '.refresh-link', function() {
               var path = $(this).attr('href').split('#').slice(1)[0];
               // Backbone router navigate doesnt do anything if
