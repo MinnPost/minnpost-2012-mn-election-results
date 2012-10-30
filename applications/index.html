@@ -462,7 +462,7 @@
         
         <p class="race-status">
         <% if (typeof races == 'undefined') { %>
-          Last updated at <%= updated_moment.format('MMM Do h:mm A') %> with
+          Updated on <%= updated_moment.format('MMM Do h:mm A') %> with
           <%= (precincts_percentage * 100).toFixed(2) %>% 
             (<%= _.formatNumber(precincts_reporting) %> 
             of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
@@ -517,7 +517,7 @@
       
       <h3><%= title %></h3>
       <% if (typeof racesRendered !== 'undefined' && !_.isEmpty(races)) { %>
-        <p class="race-status">Last updated at <%= updated_moment.format('MMM Do h:mm A') %>.</p>
+        <p class="race-status">Updated on <%= updated_moment.format('MMM Do h:mm A') %>.</p>
         <% if (typeof tooMany !== 'undefined' && tooMany === true) { %>
           <p>Showing many results.  Try narrowing your search to find specifc race(s).</p>
         <% } %>
@@ -542,7 +542,7 @@
       <div class="dashboard-header-container">
         <p>
           <% if (typeof updated != 'undefined') { %>
-            Last updated at <%= moment.unix(updated.value_blob).format('MMM Do h:mm A') %> with
+            Updated on <%= moment.unix(updated.value_blob).format('MMM Do h:mm A') %> with
             <%= (precincts_reporting.value_blob * 100 / total_effected_precincts.value_blob).toFixed(2) %>% 
               (<%= _.formatNumber(precincts_reporting.value_blob) %> 
               of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting.
@@ -568,7 +568,7 @@
       <div class="dashboard-search-container">
         <div class="dashboard-inner-container">
           <h4>Search</h4>
-          <p class="race-status">Start typing a few characters and get suggestions.</p>
+          <p class="race-status">Start typing to see suggest races (at least 3 characters).</p>
           <form class="elections-search-form clear-block">
             <div class="election-form-radios form-radios">
               <span>Search by</span>
@@ -1495,7 +1495,9 @@
           
           getColor: function(party, title) {
             // A hackish way to color based on titles for questions
-            party = (_.contains['YES', 'NO', 'ESTIMATED BLANKS'], title) ? title : party;
+            console.log(party, title);
+            party = (_.contains(['YES', 'NO', 'ESTIMATED BLANKS'], title)) ? title : party;
+            console.log(party);
             return (!_.isUndefined(this.partyColors[party]) && 
               this.partyColors[party].colors[0] !== '') ?
               this.partyColors[party].colors[0] : this.partyColors.NONE.colors[0];
