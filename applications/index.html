@@ -648,7 +648,6 @@
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/raphael-2.1.0/raphael-min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/qtip2-master-20121022/jquerycustom.qtip.min.js"></script>
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/jquery.ui-autocomplete-1.9.1/jquerycustom.ui-autocomplete-1.9.1.min.js"></script>
-    <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/masonry-v2.1.05/jquerycustom.masonry.min.js"></script>
     
     <script type="text/javascript">
       // Add some helpful funcitons to Backboe, because that makes
@@ -1104,11 +1103,6 @@
               }
             });
             
-            // Some masonry goodness
-            $('.dashboard-summaries').masonry({
-              itemSelector: '.dashboard-item'
-            });
-            
             // Add sumary containers and start rendering
             this.$summaries = this.$el.find('.dashboard-summaries');
             _.each(this.summaries, function(summary, s) {
@@ -1119,13 +1113,11 @@
                 summary.collection.fetch({
                   success: function(collection, response) {
                     summary.render();
-                    $('.dashboard-summaries').masonry('reload');
                   }
                 });
               }
               else {
                 summary.render();
-                $('.dashboard-summaries').masonry('reload');
               }
             }, this);
             
