@@ -538,7 +538,7 @@
                 (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 5 || _.size(candidates) === 1) &&
                 ((typeof partisan == 'undefined') ||
                   ((typeof partisan != 'undefined' && partisan == true) && 
-                  (candidates[c].party_id === 'R' || candidates[c].party_id === 'DFL'))
+                  (candidates[c].party_id === 'R' || candidates[c].party_id === 'DFL' || candidates[c].party_id === 'D'))
                 )
               ) { %>
                 <tr>
@@ -954,24 +954,32 @@
             this.partyViewer = this.partyViewer || new PartyView();
             
             parsed.candidates = response;
-            parsed.candidates = _.map(response, function(r) {
-              r.partyOutput = this.partyViewer.render(r.party_id, r.party_id);
-              return r;
+            parsed.candidates = _.map(response, function(c) {
+              // Change party from DFL to D for federal positions
+              if ((c.office_name.toLowerCase().indexOf('president') !== -1 ||
+                c.office_name.toLowerCase().indexOf('u.s.') !== -1) &&
+                c.party_id === 'DFL') {
+                c.party_id = 'D'
+              }
+              
+              // Create party color output
+              c.partyOutput = this.partyViewer.render(c.party_id, c.party_id);
+              return c;
             }, this);
             
-            if (!_.isUndefined(response[0])) {
-              parsed.race_id = response[0].race_id;
-              parsed.race = response[0].office_name;
-              parsed.updated = response[0].updated;
-              parsed.updated_moment = moment.unix(response[0].updated);
-              parsed.precincts_reporting = response[0].precincts_reporting;
-              parsed.total_effected_precincts = response[0].total_effected_precincts;
+            if (!_.isUndefined(parsed.candidates[0])) {
+              parsed.race_id = parsed.candidates[0].race_id;
+              parsed.race = parsed.candidates[0].office_name;
+              parsed.updated = parsed.candidates[0].updated;
+              parsed.updated_moment = moment.unix(parsed.candidates[0].updated);
+              parsed.precincts_reporting = parsed.candidates[0].precincts_reporting;
+              parsed.total_effected_precincts = parsed.candidates[0].total_effected_precincts;
               parsed.precincts_percentage = parsed.precincts_reporting / parsed.total_effected_precincts;
-              parsed.question_body = response[0].question_body;
+              parsed.question_body = parsed.candidates[0].question_body;
               
               // Determine winning party
               winning = (parsed.precincts_percentage === 0) ? this.blankCandidate :
-                _.max(response, function(r) { return r.percentage });
+                _.max(parsed.candidates, function(r) { return r.percentage });
               parsed.winning_race = winning;
               parsed.winning_party = winning.party_id;
               parsed.winning_party_color = this.partyViewer.getColor(winning.party_id);
@@ -1526,7 +1534,7 @@
               var sort = '';
               if (r.get('winning_party') == 'DFL') { sort += 'AA'; }
               if (r.get('winning_party') == 'R') { sort += 'ZZ'; }
-              sort += r.get('winning_party');
+              sort += r.get('winning_party')
               if (r.get('winning_party') == 'R' && r.get('all_in')) { sort += 'ZZ'; }
               else if (r.get('winning_party') == 'R' && !r.get('all_in')) { sort += 'AA'; }
               else { sort += (r.get('all_in') ? 'AA' : 'ZZ'); }
