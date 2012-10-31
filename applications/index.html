@@ -1000,14 +1000,18 @@
           safeFields: [ 'question_body', 'office_name', 'candidate', 'race_id', 'special' ],
           
           specialQueries: {
-            'state-leg': ["SELECT * FROM results_general WHERE office_name LIKE '%state senator%' " +
+            'state-leg': ["SELECT * FROM results_general WHERE office_name LIKE '%state senator%' ",
               "OR office_name LIKE '%state representative%' ORDER BY office_name"],
-            'us-congress': ["SELECT * FROM results_general WHERE office_name LIKE '%u.s. senator%' " +
+            'us-congress': ["SELECT * FROM results_general WHERE office_name LIKE '%u.s. senator%' ",
               "OR office_name LIKE '%u.s. representative%' ORDER BY office_name"],
-            'judicial': ["SELECT * FROM results_general WHERE office_name LIKE '%judge%' " +
+            'judicial': ["SELECT * FROM results_general WHERE office_name LIKE '%judge%' ",
               "OR office_name LIKE '%justice%' ORDER BY office_name"],
-            'questions': ["SELECT * FROM results_general WHERE office_name LIKE '%question%' " +
-              "OR office_name LIKE '%amendment%' ORDER BY office_name"]
+            'questions': ["SELECT * FROM results_general WHERE office_name LIKE '%question%' ",
+              "OR office_name LIKE '%amendment%' ORDER BY office_name"],
+            'metro-council': ["SELECT r.* FROM results_general AS r JOIN district_municipal AS d ",
+              "ON r.district_code = d.mcd_fips_code AND d.county_id IN ('27', '62') ",
+              "WHERE r.office_name LIKE '%council member%' ",
+              "ORDER BY r.office_name"]
           },
           url: function() {
             var query = [];
