@@ -953,7 +953,7 @@
             var winning;
             this.partyViewer = this.partyViewer || new PartyView();
             
-            parsed.candidates = response;
+            // Go through candidates
             parsed.candidates = _.map(response, function(c) {
               // Change party from DFL to D for federal positions
               if ((c.office_name.toLowerCase().indexOf('president') !== -1 ||
@@ -966,6 +966,7 @@
               c.partyOutput = this.partyViewer.render(c.party_id, c.party_id);
               return c;
             }, this);
+            parsed.candidates = _.sortBy(parsed.candidates, function(c) { return c.percentage * -1; });
             
             if (!_.isUndefined(parsed.candidates[0])) {
               parsed.race_id = parsed.candidates[0].race_id;
@@ -977,17 +978,19 @@
               parsed.precincts_percentage = parsed.precincts_reporting / parsed.total_effected_precincts;
               parsed.question_body = parsed.candidates[0].question_body;
               
-              // Determine winning party
-              winning = (parsed.precincts_percentage === 0) ? this.blankCandidate :
-                _.max(parsed.candidates, function(r) { return r.percentage });
-              parsed.winning_race = winning;
-              parsed.winning_party = winning.party_id;
-              parsed.winning_party_color = this.partyViewer.getColor(winning.party_id);
+              // Determine winning candidate(s).  Could be more than one.
+              var electing = parsed.candidates[0].office_name.match(/\(elect ([0-9]*)\)/i);
+              electing = (electing === null) ? 1 : parseInt(electing[1]);
+              var winning = (parsed.precincts_percentage === 0) ? [ this.blankCandidate ] :
+                _.first(parsed.candidates, electing);
+              parsed.winning_party = winning[0].party_id;
+              parsed.winning_party_color = this.partyViewer.getColor(winning[0].party_id);
               
-              // Determine if 100% reporting and winning
+              // Determine if candidates won (100% reporting and winning)
               parsed.all_in = (parsed.precincts_percentage == 1) ? true : false;
               parsed.candidates = _.map(parsed.candidates, function(c) {
-                c.won = (winning.candidate_id == c.candidate_id) ? true : false;
+                var found = _.find(winning, function(w) { return w.candidate_id === c.candidate_id });
+                c.won = (found) ? true : false;
                 return c;
               });
             }
