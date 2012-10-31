@@ -197,50 +197,6 @@
       .state-leg-chart-container {
         width: 100%;
       }
-      .barchart-container {
-        margin-bottom: 1em;
-        position: relative;
-      }
-      .barchart-container .barchart-cand {
-        height: 1.5em;
-        float: left;
-      }
-      .barchart-middle-marker {
-        position: absolute;
-        left: 50%;
-        top: 0;
-        height: .5em;
-        width: 3px;
-        margin-left: -1px;
-        background-color: #676767;
-        z-index: 999;
-      }
-      
-      .donut-chart-container {
-        height: 100px;
-        width: 100%;
-      }
-      
-      .block-chart-block {
-        width: 10px;
-        height: 10px;
-        margin: 0 5px 5px 0;
-        background-color: #FAFAFA;
-        float: left;
-      }
-      .block-chart-block.block-chart-not-in {
-        zoom: 1;
-        -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-        filter: alpha(opacity=50);
-        -moz-opacity:0.5;
-        -khtml-opacity: 0.5;
-        opacity: 0.5;
-      }
-      .block-chart-count {
-        text-align: center;
-        margin: .5em 0 1em 0;
-        font-size: 1.5em;
-      }
       
       .dashboard-congress-senate h3,
       .dashboard-congress-senate .race-status,
@@ -257,9 +213,6 @@
         display: none;
       }
       
-      .dashboard-state-leg {
-        margin-bottom: 1.5em;
-      }
       .dashboard-congress-container .dashboard-inner-container, 
       .dashboard-search-container .dashboard-inner-container {
         border-bottom: none;
@@ -334,6 +287,73 @@
       }
       .race-barchart .barchart-middle-marker {
         height: 1em;
+      }
+      
+      /**
+       * Chart styles
+       */
+      .barchart-container {
+        margin-bottom: 1em;
+        position: relative;
+      }
+      .barchart-container .barchart-cand {
+        height: 1.5em;
+        float: left;
+      }
+      .barchart-middle-marker {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        height: .5em;
+        width: 3px;
+        margin-left: -1px;
+        background-color: #676767;
+        z-index: 999;
+      }
+      
+      .donut-chart-container {
+        height: 100px;
+        width: 100%;
+      }
+      
+      .block-chart-block {
+        width: 10px;
+        height: 10px;
+        margin: 0 5px 5px 0;
+        background-color: #FAFAFA;
+        float: left;
+      }
+      .block-chart-not-in {
+        zoom: 1;
+        -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+        filter: alpha(opacity=50);
+        -moz-opacity:0.5;
+        -khtml-opacity: 0.5;
+        opacity: 0.5;
+      }
+      .block-chart-count {
+        text-align: center;
+        margin: .5em 0 1em 0;
+        font-size: 1.5em;
+      }
+      
+      .chart-legend {
+        text-align: center;
+        font-size: .75em;
+        color: #ABABAB;
+      }
+      .chart-legend div {
+        display: inline-block;
+        zoom:1;
+        *display:inline;
+      }
+      .chart-legend-item {
+        margin-right: 1em;
+      }
+      .chart-legend-color {
+        width: 10px;
+        height: 10px;
+        background-color: red;
       }
       
       /**
@@ -657,6 +677,20 @@
               <h5>State House</h5>
               <div class="state-leg-house-chart"></div>
             </div>
+          </div>
+          
+          <div class="chart-legend">
+            <% for (var c = 0, l = legendColors.length; c < l; c++) { %>
+              <div class="chart-legend-item">
+                <div class="chart-legend-color" style="background-color: <%= legendColors[c].colors[0] %>;"></div>
+                <%= legendColors[c].party %> (100% reporting)
+              </div>
+              <div class="chart-legend-item">
+                <div class="chart-legend-color block-chart-not-in" style="background-color: <%= legendColors[c].colors[0] %>;"></div>
+                <%= legendColors[c].party %> (leading)
+              </div>
+              <br />
+            <% } %>
           </div>
         </div>
       </div>
@@ -1112,6 +1146,7 @@
             "SELECT DISTINCT candidate FROM results_general WHERE candidate LIKE '%%search%%' ORDER BY candidate LIMIT 10",
           
           initialize: function() {
+            var thisView = this;
             this.partyView = new PartyView();
             this.template = $('#template-dashboard-view').html();
             this.loadingTemplate = $('#template-loading').html();
@@ -1196,8 +1231,11 @@
                 className: 'dashboard-state-leg',
                 render: function(vizOnly) {
                   vizOnly = (_.isBoolean(vizOnly)) ? vizOnly : false;
+                  var legendColors = _.filter(thisView.partyView.partyColors, function(c, i) {
+                    return _.contains(['DFL', 'R'], i);
+                  });
                   $('.' + this.className).html(_.template($('#template-dashboard-state-leg').html(),
-                    { showTitle: !vizOnly }));
+                    { showTitle: !vizOnly, legendColors: legendColors }));
 
                   var senateView = new BlockChart({
                     el: '.state-leg-senate-chart',
@@ -1517,27 +1555,28 @@
         // View for parties
         var PartyView = Backbone.View.extend({
           partyColors: {
-            'IP': { colors: [ '#FF7429' ], title: 'Independence' },
-            'R': { colors: [ '#AD001A' ], title: 'Republican' },
-            'DFL': { colors: [ '#0071AC' ], title: 'Democratic-Farmer-Labor' },
-            'LIB': { colors: [ '#FAD400' ], title: 'Libertarian Party' },
-            'SWP': { colors: [ '#FA00A2' ], title: 'Socialist Workers Party' },
-            'CP': { colors: [ '#FA5700' ], title: 'Constitution Party' },
-            'CG': { colors: [ '#FF7E38' ], title: 'Constitutional Government' },
-            'GP': { colors: [ '#25FA00' ], title: 'Green Party' },
-            'GR': { colors: [ '#A2FA00' ], title: 'Grassroots Party' },
-            'MOP': { colors: [ '#00A2FA' ], title: 'Minnesota Open Progressives' },
-            'EDP': { colors: [ '#56FF38' ], title: 'Ecology Democracy Party' },
-            'IND': { colors: [ '#FF7E38' ], title: 'Independent' },
-            'SL': { colors: [ '#EA75FF' ], title: 'Socialism and Liberation' },
-            'JP': { colors: [ '#FAD400' ], title: 'Justice Party' },
-            'NP': { colors: [ '#CFCFCF', '#C2C2C2', '#B5B5B5', '#A8A8A8' ], title: 'Nonpartisan' },
-            'WI': { colors: [ '#999999' ], title: 'Write-In' },
-            'NONE': { colors: [ '#E1E1E1' ], title: 'No party assigned' },
-            'YES': { colors: [ '#1AAD00' ], title: 'Yes' },
-            'NO': { colors: [ '#B0B0B0' ], title: 'No' },
-            'ESTIMATED BLANKS': { colors: [ '#E1E1E1' ], title: 'Estimated blanks' },
-            'UNK': { colors: [ '#AAAAAA' ], title: 'Unknown party' }
+            'IP': { party: 'IP', colors: [ '#FF7429' ], title: 'Independence' },
+            'R': { party: 'R', colors: [ '#AD001A' ], title: 'Republican' },
+            'DFL': { party: 'DFL', colors: [ '#0071AC' ], title: 'Democratic' },
+            'D': { party: 'D', colors: [ '#0071AC' ], title: 'Democratic-Farmer-Labor' },
+            'LIB': { party: 'LIB', colors: [ '#FAD400' ], title: 'Libertarian Party' },
+            'SWP': { party: 'SWP', colors: [ '#FA00A2' ], title: 'Socialist Workers Party' },
+            'CP': { party: 'CP', colors: [ '#FA5700' ], title: 'Constitution Party' },
+            'CG': { party: 'CG', colors: [ '#FF7E38' ], title: 'Constitutional Government' },
+            'GP': { party: 'GP', colors: [ '#25FA00' ], title: 'Green Party' },
+            'GR': { party: 'GR', colors: [ '#A2FA00' ], title: 'Grassroots Party' },
+            'MOP': { party: 'MOP', colors: [ '#00A2FA' ], title: 'Minnesota Open Progressives' },
+            'EDP': { party: 'EDP', colors: [ '#56FF38' ], title: 'Ecology Democracy Party' },
+            'IND': { party: 'IND', colors: [ '#FF7E38' ], title: 'Independent' },
+            'SL': { party: 'SL', colors: [ '#EA75FF' ], title: 'Socialism and Liberation' },
+            'JP': { party: 'JP', colors: [ '#FAD400' ], title: 'Justice Party' },
+            'NP': { party: 'NP', colors: [ '#CFCFCF', '#C2C2C2', '#B5B5B5', '#A8A8A8' ], title: 'Nonpartisan' },
+            'WI': { party: 'WI', colors: [ '#999999' ], title: 'Write-In' },
+            'NONE': { party: 'NONE', colors: [ '#E1E1E1' ], title: 'No party assigned' },
+            'YES': { party: 'YES', colors: [ '#1AAD00' ], title: 'Yes' },
+            'NO': { party: 'NO', colors: [ '#B0B0B0' ], title: 'No' },
+            'ESTIMATED BLANKS': { party: 'ESTIMATED BLANKS', colors: [ '#E1E1E1' ], title: 'Estimated blanks' },
+            'UNK': { party: 'UNK', colors: [ '#AAAAAA' ], title: 'Unknown party' }
           },
           
           initialize: function() {
