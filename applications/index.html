@@ -1568,12 +1568,14 @@
             // will reset the refresh count.
             // Also, scroll back to top of container
             this.on('all', function(e) {
-              /*
-              $('html, body').animate({
-                scrollTop: $('#render-container').offset().top - 15
-              }, 1000);
-              */
               this.autoRefreshOn();
+            });
+            // Some hackery to stop auto refresh when searching
+            $('#render-container').on('focus change', '.dashboard-search-container input', function(e) {
+              thisRouter.autoRefreshOff();
+            });
+            $('#render-container').on('blur', '.dashboard-search-container input', function(e) {
+              thisRouter.autoRefreshOn();
             });
           },
         
