@@ -884,34 +884,27 @@
           url: function() {
             var query = [];
             this.options.search = decodeURI(this.options.search.replace(/\+/g, ' '));
-            this.options.limit = this.options.limit || 100;
+            this.options.limit = this.options.limit || 40;
             this.options.field = (_.contains(this.safeFields, this.options.field)) ?
               this.options.field : 'office_name';
 
-            // Put together query
+            // Put together query.  For general searching, we actually
+            // need to subquery to get race_ids and make sure we
+            // are showing everything in a race.
             if (this.options.field === 'special' && 
               _.isArray(this.specialQueries[this.options.search])) {
               query = this.specialQueries[this.options.search];
               // Push limit up so we don't mark as too many
               this.options.limit = 1000;
             }
-            else if (this.options.field === 'office_name') {
-              query.push("SELECT * FROM results_general WHERE ");
-              query.push(this.options.field + " ");
-              query.push(_.isArray(this.options.search) ?
-                "IN ('" + this.options.search.join("', '") + "') "
-                : "LIKE '%" + this.options.search + "%' ");
-              query.push("ORDER BY office_name, percentage ");
-              query.push("LIMIT " + this.options.limit + " ");
-            }
             else {
               // Use subqueries for other fields
               query.push("SELECT r.* FROM results_general AS r ");
                 query.push("INNER JOIN (SELECT DISTINCT race_id FROM results_general WHERE ");
-                query.push(this.options.field + " LIKE '%" + this.options.search + "%' LIMIT 75) AS sub ");
+                query.push(this.options.field + " LIKE '%" + this.options.search + "%' ");
+                query.push("LIMIT " + this.options.limit + ") AS sub ");
               query.push("ON r.race_id = sub.race_id ");
               query.push("ORDER BY r.office_name, r.percentage ");
-              query.push("LIMIT " + this.options.limit + " ");
             }
             return baseAPIURL + encodeURI(query.join(''));
           },
@@ -933,11 +926,8 @@
             data.title = this.options.search;            
 
             if (this.length > 0) {
-              // Flag if too many candidates
-              _.each(this.models, function(m) {
-                cCount += m.get('candidates').length;
-              });
-              if (cCount >= this.options.limit) {
+              // Flag if too many races
+              if (this.length >= this.options.limit) {
                 data.tooMany = true;
               }
               
