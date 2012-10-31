@@ -63,27 +63,34 @@
         border-top: 1px solid #BCBCBC;
         padding-top: 1em;
       }
-      #minnpost-2012-mn-election-results table {
+      #minnpost-2012-mn-election-results table,
+      .qtip table {
         width: 100%;
         font-size: .75em;
         font-family: Helvetica,Arial,Geneva,sans-serif;
       }
-      #minnpost-2012-mn-election-results table tr:nth-child(even) {
+      #minnpost-2012-mn-election-results table tr:nth-child(even),
+      .qtip table tr:nth-child(even) {
         background-color: #EBEBEB;
       }
-      #minnpost-2012-mn-election-results table td.td-won {
+      #minnpost-2012-mn-election-results table td.td-won,
+      .qtip table td.td-won {
         width: 1%;
       }
-      #minnpost-2012-mn-election-results table td.td-cand {
+      #minnpost-2012-mn-election-results table td.td-cand,
+      .qtip table td.td-won {
         width: 50%;
       }
-      #minnpost-2012-mn-election-results table td.td-party {
+      #minnpost-2012-mn-election-results table td.td-party,
+      .qtip table td.td-won {
         width: 15%;
       }
-      #minnpost-2012-mn-election-results table td.td-votes {
+      #minnpost-2012-mn-election-results table td.td-votes,
+      .qtip table td.td-won {
         width: 15%;
       }
-      #minnpost-2012-mn-election-results table td.td-per {
+      #minnpost-2012-mn-election-results table td.td-per,
+      .qtip table td.td-won {
         width: 10%;
       }
       
@@ -226,6 +233,10 @@
         font-size: .85em;
       }
       
+      .dashboard-state-leg .chart-legend-item {
+        width: 40%;
+      }
+      
       /* Specific positioning */
       .dashboard-summaries {
         position: relative;
@@ -288,6 +299,9 @@
       .race-barchart .barchart-middle-marker {
         height: 1em;
       }
+      .races-dashboard-part .chart-legend {
+        margin-bottom: 2em;
+      }
       
       /**
        * Chart styles
@@ -335,6 +349,7 @@
         text-align: center;
         margin: .5em 0 1em 0;
         font-size: 1.5em;
+        font-family: Helvetica,Arial,Geneva,sans-serif;
       }
       
       .chart-legend {
@@ -381,6 +396,18 @@
       }
       .election-form-radios input {
         margin-left: .5em;
+      }
+      
+      /**
+       * Qtip styling
+       */
+      .ui-tooltip-light,
+      .ui-tooltip-default {
+        color: inherit;
+      }
+      .ui-tooltip,
+      .qtip {
+        font-size: 90%;
       }
       
       /**
@@ -689,7 +716,6 @@
                 <div class="chart-legend-color block-chart-not-in" style="background-color: <%= legendColors[c].colors[0] %>;"></div>
                 <%= legendColors[c].party %> (leading)
               </div>
-              <br />
             <% } %>
           </div>
         </div>
