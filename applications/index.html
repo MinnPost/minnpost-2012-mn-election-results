@@ -429,7 +429,7 @@
     <!-- Templates to be used in client side processing. -->
     <script id="template-service-down" type="text/template">
       <h3>We are sorry</h3>
-      <p>The election data service seems to be down.</p>
+      <p>The election data service seems to be down or you no longer have access to the Internet.  Try refreshing the page or checking your Internet connection.</p>
     </script>
     
     <script id="template-race-view" type="text/template">
@@ -809,6 +809,66 @@
       
       // Make the magic happen
       (function($, w, undefined) {
+        // Override Backbone's sync to use jquery.jsonp which handles errors.
+        // We are basically only changing the last line from $.ajax
+        // to $.jsonp
+        Backbone.sync = function(method, model, options) {
+          var methodMap = {
+            'create': 'POST',
+            'update': 'PUT',
+            'delete': 'DELETE',
+            'read':   'GET'
+          };
+          var getValue = function(object, prop) {
+            if (!(object && object[prop])) return null;
+            return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+          };
+          var type = methodMap[method];
+      
+          // Default options, unless specified.
+          options || (options = {});
+      
+          // Default JSON-request options.
+          var params = {type: type, dataType: 'json'};
+      
+          // Ensure that we have a URL.
+          if (!options.url) {
+            params.url = getValue(model, 'url') || urlError();
+          }
+      
+          // Ensure that we have the appropriate request data.
+          if (!options.data && model && (method == 'create' || method == 'update')) {
+            params.contentType = 'application/json';
+            params.data = JSON.stringify(model.toJSON());
+          }
+      
+          // For older servers, emulate JSON by encoding the request into an HTML-form.
+          if (Backbone.emulateJSON) {
+            params.contentType = 'application/x-www-form-urlencoded';
+            params.data = params.data ? {model: params.data} : {};
+          }
+      
+          // For older servers, emulate HTTP by mimicking the HTTP method with `_method`
+          // And an `X-HTTP-Method-Override` header.
+          if (Backbone.emulateHTTP) {
+            if (type === 'PUT' || type === 'DELETE') {
+              if (Backbone.emulateJSON) params.data._method = type;
+              params.type = 'POST';
+              params.beforeSend = function(xhr) {
+                xhr.setRequestHeader('X-HTTP-Method-Override', type);
+              };
+            }
+          }
+      
+          // Don't process data on a non-GET request.
+          if (params.type !== 'GET' && !Backbone.emulateJSON) {
+            params.processData = false;
+          }
+      
+          // Make the request, allowing the user to override any Ajax options.
+          return $.jsonp(_.extend(params, options));
+        };
+      
         // API URL for easy switching
         var baseAPIURL = 'http://ec2-174-129-137-145.compute-1.amazonaws.com/?box=ubuntu&callback=?&q='
         //var baseAPIURL = 'http://box.scraperwiki.com/zzolo/mn-2012-election-results/sqlite?callback=?&q='
@@ -1530,6 +1590,7 @@
         
           initialize: function() {
             var thisRouter = this;
+            this.serviceDownTemplate = $('#template-service-down').html();
           
             // Models, collections
             this.race = new Race();
@@ -1588,7 +1649,7 @@
           },
           
           showRace: function(raceID) {
-            var thisView = this;
+            var thisRouter = this;
             
             // As the race may not change, we still
             // want to trigger a change
@@ -1596,19 +1657,27 @@
             this.raceView.loading();
             this.race.fetch({
               success: function(e) {
-                thisView.race.trigger('change');
+                thisRouter.race.trigger('change');
+              },
+              error: function(e) {
+                $('#render-container').html(_.template(thisRouter.serviceDownTemplate, {}));
               }
             });
           },
           
           showRaceGroup: function(races) {
+            var thisRouter = this;
             this.races.options = this.races.options || {};
             races = races.split('/');
             
             this.races.options.field = (races.length == 1) ? 'office_name' : races.shift();
             this.races.options.search = races.shift();
             this.racesView.loading();
-            this.races.fetch();
+            this.races.fetch({
+              error: function(e) {
+                $('#render-container').html(_.template(thisRouter.serviceDownTemplate, {}));
+              }
+            });
           },
           
           autoRefresh: function() {
