@@ -1399,7 +1399,7 @@
               var search = $('.elections-search').val();
               if (search !== '' && !_.isUndefined(thisView.options.router)) {
                 thisView.options.router.navigate(
-                  '/races/' + type + '/' + encodeURI(search), { trigger: true });
+                  '/races/' + type + '/' + encodeURI(search.replace('#', '%')), { trigger: true });
               }
             });
           },
