@@ -115,6 +115,14 @@
         line-height: 100%;
       }
       
+      .ie-upgrade-note {
+        font-size: 90%;
+        background-color: #DCDCDC;
+        border: 1px solid #A2A2A2;
+        padding: 1em;
+        margin: 1em 0 2em 0;
+      }
+      
       .race-permalink {
         font-size: .5em;
         background: transparent url('https://s3.amazonaws.com/data.minnpost/projects/2012-mn-election-results/images/link-16x8.png') center right no-repeat;
@@ -480,6 +488,17 @@
       }
     </style>
     
+      <!--[if lte IE 7]>
+        <style type="text/css">
+          .amendment-canvas-block {
+            width: 45%;
+          }
+          .elections-search {
+            width: 85%;
+          }
+        </style>
+      <![endif]-->
+    
     
     
     <!-- Initial HTML for application -->
@@ -487,6 +506,17 @@
       <noscript>
         <p>This application requires Javascript which is used to make your web browser more interactive.  If this message does not go away, please consider enabling Javascript.  Here are <a href="http://www.enable-javascript.com/" target="_blank">instructions on how to enable JavaScript in your web browser</a>.</p>
       </noscript>
+      
+      <!--[if lte IE 7]>
+        <div class="ie-upgrade-note">
+          <h4>Consider upgrading your browser</h4>
+          <p>Your <strong>Internet Browser</strong> is the application you use to navigate webpages on the internet.  You are currently using an older version of Internet Explorer.  Unfortunately, with this old browser, you will not be able to experience the full version of this interactive story.</p>
+          
+          <p><a href="http://browsehappy.com/" target="_blank">Click here to find out about options for newer browsers</a>.</p>
+        
+          <p>If you cannot install new applications on your computer (because you are at work, for example), consider using <a href="http://www.google.com/chromeframe" target="_blank">Google's Chrome Frame</a> for Internet Explorer.</p>
+        </div>
+      <![endif]-->
       
       <div id="render-container">
       </div>
@@ -828,6 +858,13 @@
     <script type="text/javascript" src="https://s3.amazonaws.com/data.minnpost/js/jquery.ui-autocomplete-1.9.1/jquerycustom.ui-autocomplete-1.9.1.min.js"></script>
     
     <script type="text/javascript">
+      // Handle custom jQuery
+      jQueryCustom = jQueryCustom.noConflict();
+      Backbone.setDomLibrary(jQueryCustom);
+      
+      // Global flag to mark a lite version for older browsers
+      window.globalLite = (jQueryCustom.browser.msie && jQueryCustom.browser.version < 8) ? true : false;
+      
       // Add some helpful funcitons to Backboe, because that makes
       // sense.
       _.formatNumber = function(num) {
@@ -841,10 +878,6 @@
         }
         return array.join('');
       };
-    
-      // Handle custom jQuery
-      jQueryCustom = jQueryCustom.noConflict();
-      Backbone.setDomLibrary(jQueryCustom);
       
       // Donut chart for Raphael (see http://jsfiddle.net/amadanNM/VdTH4/2/)
       Raphael.fn.donutChart = function(cx, cy, r, rin, rout, values, colors, divider, stroke) {
@@ -1219,6 +1252,8 @@
               this.dashboardView = this.dashboardView || new DashboardView();
               if (_.isObject(this.dashboardView.summaries[part])) {
                 var renderer = this.dashboardView.summaries[part];
+                // Check if this is a lite item or not
+                if (w.globalLite === true && !_.isUndefined(renderer.noLite) && renderer.noLite === true) { return; }
                 renderer.collection = this.collection;
                 renderer.className = 'races-dashboard-part';
                 renderer.render(true);
@@ -1362,6 +1397,7 @@
                 }
               },
               stateLeg: {
+                noLite: true,
                 collection: new Races([], {
                   field: 'special', search: 'state-leg'
                 }),
@@ -1455,6 +1491,9 @@
             // Add sumary containers and start rendering
             this.$summaries = this.$el.find('.dashboard-summaries');
             _.each(this.summaries, function(summary, s) {
+              // For some browsers (cough, IE) some of these may be too intensive
+              if (w.globalLite === true && !_.isUndefined(summary.noLite) && summary.noLite === true) { return; }
+              // Add element for rendering
               $('<div>').addClass(summary.className).addClass('dashboard-item').appendTo(this.$summaries);
               
               if (_.isObject(summary.collection)) {
