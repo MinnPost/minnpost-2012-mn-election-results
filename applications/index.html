@@ -804,7 +804,7 @@
         <% } %>
         <% for (var i in c) { %>
           <div class="barchart-cand race-<%= c[i].race_id %> cand-<%= c[i].candidate_id %>"
-            style="width: <%= c[i].width * 100 %>%; background-color: <%= c[i].color %>;"></div>
+            style="width: <%= c[i].percentage %>%; background-color: <%= c[i].color %>;"></div>
         <% } %>
       </div>
     </script>
@@ -1558,33 +1558,12 @@
           
           render: function() {
             var cands = this.model.get('candidates');
-            var pp = this.model.get('precincts_percentage');
-            var up = 1 - this.model.get('precincts_percentage');
-            var offsetX = 0, min = .1, max = .9;
-            
-            // Reign in precincts reporting a bit so that the visualization
-            // is not too skewed (except when 100% reporting).
-            pp = (pp < min) ? min : ((pp > max && pp < 1) ? max : pp);
-            // Sort and create offsets
             cands = _.sortBy(cands, function(c) { return c.percentage * -1; });
             cands = _.map(cands, function(c) {
-              c.width = pp * c.percentage / 100;
-              c.offsetX = offsetX;
-              offsetX += c.width;
               c.color = this.partyView.getColor(c.party_id, c.candidate, true);
               return c;
             }, this);
-            // Add a point of data that represents the precints
-            // not reporting
-            cands.push({
-              width: (1 - pp),
-              offsetX: offsetX,
-              color: this.partyView.getColor(),
-              candidate: 'There are an unknown number of voters in ' + (up * 100).toFixed(2) + '% of precincts that have not reported yet',
-              percentage: (up * 100).toFixed(2),
-              votes_candidate: 0
-            });
-            $(this.el).html(_.template(this.template, { c: cands, pp: pp, middleMarker: this.options.middleMarker }));
+            $(this.el).html(_.template(this.template, { c: cands, middleMarker: this.options.middleMarker }));
             
             // Add tooltips
             _.each(cands, function(c) {
