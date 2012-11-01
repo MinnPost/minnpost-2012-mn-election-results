@@ -162,6 +162,27 @@
       }
       
       /**
+       * Tabs
+       */
+      .races-tabs-container {
+        text-align: center;
+        margin: 1em 0 2em 0;
+      }
+      .tabs-tab {
+        background-color: #DBDBDB;
+        padding: .25em .5em;
+        margin-right: .25em;
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
+        border-radius: 3px;
+      }
+      .tabs-tab:hover,
+      .tabs-tab:active,
+      .tabs-tab.active {
+        background-color: #BCBCBC;
+      }
+      
+      /**
        * Dashboard
        */
       .dashboard-header-container {
@@ -480,81 +501,83 @@
     </script>
     
     <script id="template-race-view" type="text/template">
-      <% if (typeof race == 'undefined') { %>
-        <p>No race or contest found.</p>
-      <% } else { %>
-        <% if (typeof races == 'undefined') { %>
-          <% if (typeof small == 'undefined' || small == false) { %>
-            <div class="race-header">
-              <a href="#dashboard" class="dashboard-link"><i class="bs-icon bs-icon-back"></i> dashboard</a>
-              <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refresh</a>
-            </div>
+      <div class="race-item">
+        <% if (typeof race == 'undefined') { %>
+          <p>No race or contest found.</p>
+        <% } else { %>
+          <% if (typeof races == 'undefined') { %>
+            <% if (typeof small == 'undefined' || small == false) { %>
+              <div class="race-header">
+                <a href="#dashboard" class="dashboard-link"><i class="bs-icon bs-icon-back"></i> dashboard</a>
+                <a href="<%= window.location.hash %>" class="refresh-link"><i class="bs-icon bs-icon-refresh"></i> refresh</a>
+              </div>
+            <% } %>
+            
+            <h3>
+              <%= race %> 
+              <% if (typeof small == 'undefined' || small == false) { %>
+                <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race"></a>
+              <% } %>
+            </h3>
+          <% } else { %>
+            <h4>
+              <%= race %>
+              <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race"></a>
+            </h4>
           <% } %>
           
-          <h3>
-            <%= race %> 
-            <% if (typeof small == 'undefined' || small == false) { %>
-              <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race"></a>
-            <% } %>
-          </h3>
-        <% } else { %>
-          <h4>
-            <%= race %>
-            <a class="race-permalink" href="#race/<%= race_id %>" title="Permanent link to this race"></a>
-          </h4>
-        <% } %>
-        
-        <% if (typeof question_body != 'undefined' && question_body != '') { %>
-          <p><%= question_body %></p>
-        <% } %>
-        
-        <p class="race-status">
-        <% if (typeof races == 'undefined') { %>
-          Updated <span class="duration-moment" data-timestamp="<%= updated %>"><%= updated_moment.fromNow() %></span> with
-          <%= (precincts_percentage * 100).toFixed(2) %>% 
-            (<%= _.formatNumber(precincts_reporting) %> 
-            of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
-        <% } else { %>
-          <%= (precincts_percentage * 100).toFixed(2) %>% 
-            (<%= _.formatNumber(precincts_reporting) %> 
-            of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
-        <% } %>
-        </p>
-        
-        <% if (typeof small == 'undefined' || small == false) { %>
-          <div class="race-barchart"></div>
-        <% } %>
-      
-        <table>
-          <% if (typeof small == 'undefined' || small == false) { %>
-            <thead>
-              <tr><th></th><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
-            </thead>
+          <% if (typeof question_body != 'undefined' && question_body != '') { %>
+            <p><%= question_body %></p>
           <% } %>
-          <tbody>
-            <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
-            <% for (var c in candidates) { %>
-              <% if (
-                (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 5 || _.size(candidates) === 1) &&
-                ((typeof partisan == 'undefined') ||
-                  ((typeof partisan != 'undefined' && partisan == true) && 
-                  (candidates[c].party_id === 'R' || candidates[c].party_id === 'DFL' || candidates[c].party_id === 'D'))
-                )
-              ) { %>
-                <tr>
-                  <td class="td-won"><% if (all_in && candidates[c].won) { %><span class="bs-icon bs-icon-won"></span><% } %></td>
-                  <td class="td-cand"><%= candidates[c].candidate %></td>
-                  <td class="td-party"><%= candidates[c].partyOutput %></td>
-                  <% if (typeof small == 'undefined' || small == false) { %>
-                    <td class="td-votes"><%= _.formatNumber(candidates[c].votes_candidate) %></td>
-                  <% } %>
-                  <td class="td-per"><%= candidates[c].percentage %>%</td>
-                </tr>
-              <% } %>
+          
+          <p class="race-status">
+          <% if (typeof races == 'undefined') { %>
+            Updated <span class="duration-moment" data-timestamp="<%= updated %>"><%= updated_moment.fromNow() %></span> with
+            <%= (precincts_percentage * 100).toFixed(2) %>% 
+              (<%= _.formatNumber(precincts_reporting) %> 
+              of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
+          <% } else { %>
+            <%= (precincts_percentage * 100).toFixed(2) %>% 
+              (<%= _.formatNumber(precincts_reporting) %> 
+              of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
+          <% } %>
+          </p>
+          
+          <% if (typeof small == 'undefined' || small == false) { %>
+            <div class="race-barchart"></div>
+          <% } %>
+        
+          <table>
+            <% if (typeof small == 'undefined' || small == false) { %>
+              <thead>
+                <tr><th></th><th>Candidate</th><th>Party</th><th>Votes</th><th>Percentage</th></tr>
+              </thead>
             <% } %>
-          </tbody>
-        </table>
-      <% } %>
+            <tbody>
+              <% candidates = _.sortBy(candidates, function(c) {  return c.percentage * -1; }); %>
+              <% for (var c in candidates) { %>
+                <% if (
+                  (candidates[c].candidate !== 'WRITE-IN**' || candidates[c].percentage > 5 || _.size(candidates) === 1) &&
+                  ((typeof partisan == 'undefined') ||
+                    ((typeof partisan != 'undefined' && partisan == true) && 
+                    (candidates[c].party_id === 'R' || candidates[c].party_id === 'DFL' || candidates[c].party_id === 'D'))
+                  )
+                ) { %>
+                  <tr>
+                    <td class="td-won"><% if (all_in && candidates[c].won) { %><span class="bs-icon bs-icon-won"></span><% } %></td>
+                    <td class="td-cand"><%= candidates[c].candidate %></td>
+                    <td class="td-party"><%= candidates[c].partyOutput %></td>
+                    <% if (typeof small == 'undefined' || small == false) { %>
+                      <td class="td-votes"><%= _.formatNumber(candidates[c].votes_candidate) %></td>
+                    <% } %>
+                    <td class="td-per"><%= candidates[c].percentage %>%</td>
+                  </tr>
+                <% } %>
+              <% } %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
     </script>
     
     <script id="template-races-view" type="text/template">
@@ -570,7 +593,9 @@
           <p>Showing many results.  Try narrowing your search to find specifc race(s).</p>
         <% } %>
       <% } %>
+      
       <div class="races-dashboard-part"></div>
+      <div class="races-tabs-container"></div>
       
       <div class="races-races-list">
         <% if (typeof racesRendered == 'undefined' || _.isEmpty(races)) { %>
@@ -579,6 +604,12 @@
           <%= racesRendered %>
         <% } %>
       </div>
+    </script>
+    
+    <script id="template-tabs" type="text/template">
+      <% for (var t = 0, l = tabs.length; t < l; t++) { %>
+        <a class="tabs-tab" data-tab="<%= tabs[t] %>" href="#/<%= hash %>/<%= tabs[t] %>"><%= tabs[t] %></a>
+      <% } %>
     </script>
     
     <script id="template-dashboard-view" type="text/template">
@@ -1147,10 +1178,17 @@
             'races/office_name/amendment': 'amendments'
           },
           
+          tabs: {
+            'races/special/us-congress': [ 'U.S. Senator', 'U.S. Representative' ],
+            'races/special/state-leg': [ 'State Senator', 'State Representative' ],
+            'races/special/judicial': [ 'Supreme Court', 'District Court', 'Court of Appeals' ]
+          },
+          
           initialize: function() {
             this.template = $('#template-races-view').html();
             this.raceTemplate = $('#template-race-view').html();
             this.loadingTemplate = $('#template-loading').html();
+            this.tabTemplate = $('#template-tabs').html();
           }, 
           
           render: function() {
@@ -1168,6 +1206,7 @@
             
             $(this.el).html(_.template(this.template, data));
             this.renderDashboard();
+            this.renderTabs();
             $('.duration-moment').timeAgo();
             return this;
           },
@@ -1184,6 +1223,39 @@
                 renderer.className = 'races-dashboard-part';
                 renderer.render(true);
               }
+            }
+          },
+          
+          renderTabs: function() {
+            var thisView = this;
+            var hash = w.location.hash.replace('#', '');
+            
+            if (hash !== '' && !_.isUndefined(this.tabs[hash])) {
+              var tabs = this.tabs[hash];
+              var currentTab = (!_.isUndefined(this.tab) && _.contains(this.tabs[hash], this.tab)) ? 
+                this.tab : tabs[0];
+              
+              // Render output
+              $('.races-tabs-container').html(_.template(this.tabTemplate, { hash: hash, tabs: tabs }));
+              
+              // Render events
+              $('.races-tabs-container .tabs-tab').click(function(e) {
+                e.preventDefault();
+                thisView.tab = $(this).attr('data-tab');
+                $('.races-races-list .race-item').each(function() {
+                  var title = $.trim($(this).find('h4').text());
+                  if (title.indexOf(thisView.tab) !== -1) {
+                    $(this).fadeIn('fast');
+                  }
+                  else {
+                    $(this).fadeOut('fast');
+                  }
+                });
+                $('.races-tabs-container .tabs-tab').removeClass('active');
+                $(this).addClass('active');
+              });
+              // Choose right tab
+              $('.tabs-tab[data-tab="' + currentTab + '"]').click();
             }
           },
           
