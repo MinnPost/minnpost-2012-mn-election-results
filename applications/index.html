@@ -486,6 +486,36 @@
       body .ui-autocomplete-loading {
         background: transparent url('https://s3.amazonaws.com/data.minnpost/projects/2012-mn-election-results/images/ajax-loader.gif') center right no-repeat;
       }
+      
+      
+      /**
+       * Responsive creen size styles
+       */
+      @media screen and (max-width: 768px) {
+        .dashboard-congress,
+        .dashboard-president,
+        .dashboard-amendments,
+        .dashboard-state-leg,
+        .dashboard-other-races,
+        .dashboard-search {
+          width: 100%;
+          position: relative;
+          top: inherit;
+          left: inherit;
+          float: none;
+          margin-left: 0;
+          margin-right: 0;
+        }
+        
+        .dashboard-congress .dashboard-inner-container,
+        .dashboard-president .dashboard-inner-container,
+        .dashboard-amendments .dashboard-inner-container,
+        .dashboard-state-leg .dashboard-inner-container,
+        .dashboard-other-races .dashboard-inner-container,
+        .dashboard-search .dashboard-inner-container {
+          margin: 0;
+        }
+      }
     </style>
     
       <!--[if lte IE 7]>
