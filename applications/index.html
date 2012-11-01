@@ -510,7 +510,7 @@
         
         <p class="race-status">
         <% if (typeof races == 'undefined') { %>
-          Updated <%= updated_moment.fromNow() %> with
+          Updated <span class="duration-moment" data-timestamp="<%= updated %>"><%= updated_moment.fromNow() %></span> with
           <%= (precincts_percentage * 100).toFixed(2) %>% 
             (<%= _.formatNumber(precincts_reporting) %> 
             of <%= _.formatNumber(total_effected_precincts) %>) precincts reporting.
@@ -565,7 +565,7 @@
       
       <h3><%= title %></h3>
       <% if (typeof racesRendered !== 'undefined' && !_.isEmpty(races)) { %>
-        <p class="race-status">Updated <%= updated_moment.fromNow() %>.</p>
+        <p class="race-status">Updated <span class="duration-moment" data-timestamp="<%= updated %>"><%= updated_moment.fromNow() %></span>.</p>
         <% if (typeof tooMany !== 'undefined' && tooMany === true) { %>
           <p>Showing many results.  Try narrowing your search to find specifc race(s).</p>
         <% } %>
@@ -590,7 +590,7 @@
       <div class="dashboard-header-container">
         <p>
           <% if (typeof updated != 'undefined') { %>
-            Updated <%= moment.unix(updated.value_blob).fromNow() %> with
+            Updated <span class="duration-moment" data-timestamp="<%= updated.value_blob %>"><%= moment.unix(updated.value_blob).fromNow() %></span> with
             <%= (precincts_reporting.value_blob * 100 / total_effected_precincts.value_blob).toFixed(2) %>% 
               (<%= _.formatNumber(precincts_reporting.value_blob) %> 
               of <%= _.formatNumber(total_effected_precincts.value_blob) %>) precincts reporting.
@@ -870,6 +870,26 @@
       
       // Make the magic happen
       (function($, w, undefined) {
+        // Simple jQuery plugin for updating time ago
+        $.fn.timeAgo = function() {
+          return this.each(function() {
+            var $this = $(this);
+            var timestamp = parseInt($this.attr('data-timestamp'));
+            var intervalID = $this.data('timeago-interval-id');
+            var updateTime = function() {
+              $this.html(moment.unix(timestamp).fromNow());
+            };
+            
+            if (_.isNumber(timestamp)) {
+              if (!_.isUndefined(intervalID)) {
+                w.clearInterval(intervalID);
+              }
+              intervalID = w.setInterval(updateTime, 10000);
+              $this.data('timeago-interval-id', intervalID);
+            }
+          });
+        };
+      
         // Override Backbone's sync to use jquery.jsonp which handles errors.
         // We are basically only changing the last line from $.ajax
         // to $.jsonp
@@ -1098,6 +1118,7 @@
               this.raceBarChart.model = this.model;
               this.raceBarChart.render();
             }
+            $('.duration-moment').timeAgo();
             return this;
           },
           
@@ -1147,6 +1168,7 @@
             
             $(this.el).html(_.template(this.template, data));
             this.renderDashboard();
+            $('.duration-moment').timeAgo();
             return this;
           },
           
@@ -1351,6 +1373,7 @@
                 thisView.metadata = {};
                 _.each(data, function(d) { thisView.metadata[d.name] = d; });
                 $('.dashboard-header').html(_.template(thisView.headerTemplate, thisView.metadata));
+                $('.duration-moment').timeAgo();
               },
               error: function(e) {
                 $('#render-container').html(_.template(thisView.serviceDownTemplate, {}));
@@ -1367,6 +1390,7 @@
                 summary.collection.fetch({
                   success: function(collection, response) {
                     summary.render();
+                    $('.duration-moment').timeAgo();
                   }
                 });
               }
