@@ -356,7 +356,7 @@
       
       .donut-chart-container {
         height: 100px;
-        width: 100%;
+        margin: 0 10px 0 10px;
       }
       
       .block-chart-block {
@@ -914,7 +914,7 @@
             attr.stroke = stroke;
             attr['stroke-width'] = 1;
           }
-          var p = sector(cx, cy, r, rin,angle, angle + angleplus, attr);
+          var p = sector(cx, cy, r, rin, angle, angle + angleplus, attr);
           
           angle += angleplus;
           chart.push(p);
@@ -1616,11 +1616,14 @@
             var colors = _.pluck(cands, 'color');
             var w = $(this.el).width();
             var h = $(this.el).height();
-            var d = (w >= h) ? h : w;
+            var r = (w >= h * 2) ? h : w / 2;
+            
             // (cx, cy, r, rin, rout, values, colors, divider, stroke)
+            // rout is not used
             var paper = Raphael($(this.el).attr('id'), w, h);
-            var chart = paper.donutChart(w / 2, h - 1, h - 1, d * .45, d * .95, values, colors, 2);
-            var path = 'M' + (w / 2).toString() + ',0 L' + (w / 2).toString() + ',' + (h * .2).toString();
+            var chart = paper.donutChart(w / 2, h - 1, r, r * .4, r, values, colors, 2);
+            var path = 'M' + (w / 2).toString() + ',' + (h - r).toString() + 
+              ' L' + (w / 2).toString() + ',' + ((h - r) + (r * .2)).toString();
             var middle = paper.path(path).attr({
               'stroke-width': 3,
               'stroke': '#676767'
