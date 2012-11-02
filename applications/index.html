@@ -727,6 +727,7 @@
             <li><a href="#races/special/judicial">Judicial races</a></li>
             <li><a href="#races/special/questions">Ballot questions</a></li>
             <li><a href="#races/special/metro-council">Metro Area Council Member races</a></li>
+            <li><a href="#races/special/hennepin-park-commissioner">Hennepin County Park Commissioner races</a></li>
           </ul>
         </div>
       </div>
@@ -1157,7 +1158,9 @@
             'metro-council': ["SELECT r.* FROM results_general AS r JOIN district_municipal AS d ",
               "ON r.district_code = d.mcd_fips_code AND d.county_id IN ('27', '62') ",
               "WHERE r.office_name LIKE '%council member%' ",
-              "ORDER BY r.office_name"]
+              "ORDER BY r.office_name"],
+            'hennepin-park-commissioner': ["SELECT * FROM results_general ",
+              "WHERE office_name LIKE '%County Park Commissioner%'"]
           },
           url: function() {
             var query = [];
@@ -1261,7 +1264,8 @@
             'races/office_name/County+Commissioner': 'County Commissioner races',
             'races/office_name/Soil+and+Water+Supervisor': 'Soil and Water Supervisor races',
             'races/office_name/Hospital+District': 'Hospital District races',
-            'races/special/metro-council': 'Metro Area Council Member races'
+            'races/special/metro-council': 'Metro Area Council Member races',
+            'races/special/hennepin-park-commissioner': 'Hennepin County Park Commissioner races'
           },
           
           dashboardParts: {
