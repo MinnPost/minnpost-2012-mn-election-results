@@ -696,7 +696,9 @@
     
     <script id="template-tabs" type="text/template">
       <% for (var t = 0, l = tabs.length; t < l; t++) { %>
-        <a class="tabs-tab" data-tab="<%= tabs[t] %>" href="#/<%= hash %>/<%= tabs[t] %>"><%= tabs[t] %></a>
+        <a class="tabs-tab" data-tab="<%= tabs[t] %>" href="#/<%= hash %>/<%= tabs[t] %>">
+          <%= (!_.isUndefined(tabTranslator[tabs[t]])) ? tabTranslator[tabs[t]] : tabs[t] %>
+        </a>
       <% } %>
     </script>
     
@@ -1279,6 +1281,13 @@
             'races/special/judicial': [ 'Supreme Court', 'District Court', 'Court of Appeals' ]
           },
           
+          tabTranslator: {
+            'U.S. Senator': 'U.S. Senate',
+            'U.S. Representative': 'U.S. House',
+            'State Senator': 'State Senate',
+            'State Representative': 'State House'
+          },
+          
           initialize: function() {
             this.template = $('#template-races-view').html();
             this.raceTemplate = $('#template-race-view').html();
@@ -1333,7 +1342,8 @@
                 this.tab : tabs[0];
               
               // Render output
-              $('.races-tabs-container').html(_.template(this.tabTemplate, { hash: hash, tabs: tabs }));
+              $('.races-tabs-container').html(_.template(this.tabTemplate, { 
+                hash: hash, tabs: tabs, tabTranslator: this.tabTranslator }));
               
               // Render events
               $('.races-tabs-container .tabs-tab').click(function(e) {
