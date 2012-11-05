@@ -1444,18 +1444,22 @@
                   var amend2 = this.collection.at(1);
                   $('.' + this.className).html(_.template($('#template-dashboard-amendments').html(),
                     { showTitle: !vizOnly }));
-                  
+                    
                   // Create donut and table chart
                   amend1.set('small', true);
                   amend2.set('small', true);
-                  var chart1 = new RaceDonutChart({
-                    el: '#amendment-1-canvas',
-                    model: amend1
-                  }).render();
-                  var chart2 = new RaceDonutChart({
-                    el: '#amendment-2-canvas',
-                    model: amend2
-                  }).render();
+                  // If no precincts reporting, no need to show
+                  // donute chart
+                  if (amend1.get('precincts_reporting') !== 0) {
+                    var chart1 = new RaceDonutChart({
+                      el: '#amendment-1-canvas',
+                      model: amend1
+                    }).render();
+                    var chart2 = new RaceDonutChart({
+                      el: '#amendment-2-canvas',
+                      model: amend2
+                    }).render();
+                  }
                   if (!vizOnly) {
                     var tableChart1 = new RaceView({
                       el: '.amendment-1-table-block',
