@@ -1140,6 +1140,22 @@
                 c.won = (found) ? true : false;
                 return c;
               });
+              
+              // If estimated blanks, need to count as no (last minute hack)
+              var estimate = _.find(parsed.candidates, function(w) { return w.candidate === 'ESTIMATED BLANKS' });
+              if (estimate) {
+                var yes = _.find(parsed.candidates, function(w) { return w.candidate === 'YES' });
+                var no = _.find(parsed.candidates, function(w) { return w.candidate === 'NO' });
+                yes = yes.percentage;
+                no = no.percentage + estimate.percentage;
+                parsed.candidates = _.map(parsed.candidates, function(c) {
+                  c.won = false;
+                  if ((c.candidate === 'YES' && (yes > no)) || (c.candidate === 'NO' && (no > yes))) {
+                    c.won = true;
+                  }
+                  return c;
+                });
+              };
             }
             return parsed;
           }
