@@ -1075,6 +1075,16 @@
           // Make the request, allowing the user to override any Ajax options.
           return $.jsonp(_.extend(params, options));
         };
+        
+        // Some hacking to show races that have been called
+        var calledRaces = {
+          'id----0101': 'BARACK OBAMA AND JOE BIDEN',
+          'id-88---0102': 'AMY KLOBUCHAR',
+          'id-88---0351': 'NO',
+          'id-88---0352': 'NO',
+          'id-88--05-0108': 'KEITH ELLISON',
+          'id-88--08-0111': 'RICHARD NOLAN'
+        };
       
         // API URL for easy switching
         var baseAPIURL = 'http://ec2-174-129-137-145.compute-1.amazonaws.com/?box=ubuntu&callback=?&q='
@@ -1156,6 +1166,15 @@
                   return c;
                 });
               };
+              
+              // More hacks for some called races
+              if (!_.isUndefined(calledRaces[parsed.race_id]) && _.isString(calledRaces[parsed.race_id])) {
+                parsed.all_in = true;
+                parsed.candidates = _.map(parsed.candidates, function(c) {
+                  c.won = (c.candidate === calledRaces[parsed.race_id]) ? true : false;
+                  return c;
+                });
+              }
             }
             return parsed;
           }
